@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
@@ -21,13 +23,12 @@ def get_jwt():
         raise Forbidden('Invalid Authorization Bearer JWT.')
 
 
-def get_http_client():
+def get_chronicle_http_client(account_info):
     """
     Returns an http client that is authorized with the given credentials
     using oauth2client or google-auth.
 
     """
-    account_info = get_jwt()
     try:
         credentials = service_account.Credentials.from_service_account_info(
             account_info, scopes=current_app.config['AUTH_SCOPES']
@@ -83,3 +84,12 @@ def join_url(base, *parts):
         [base.rstrip('/')] +
         [part.strip('/') for part in parts]
     )
+
+
+def format_time_to_arg(input_datetime):
+    """
+       Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
+       acceptable by Chronicle Backstory API
+
+    """
+    return f'{input_datetime.replace(microsecond=0).isoformat()}Z'
