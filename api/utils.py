@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
