@@ -90,4 +90,4 @@ def format_time_to_arg(input_datetime):
        acceptable by Chronicle Backstory API
 
     """
-    return f'{input_datetime.replace(microsecond=0).isoformat()}Z'
+    return f'{input_datetime.isoformat(timespec="seconds")}Z'

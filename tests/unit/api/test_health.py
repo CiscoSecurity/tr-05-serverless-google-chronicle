@@ -1,6 +1,6 @@
 from http import HTTPStatus
+from unittest.mock import MagicMock, patch
 
-from mock import patch, MagicMock
 from pytest import fixture
 
 from .utils import headers
