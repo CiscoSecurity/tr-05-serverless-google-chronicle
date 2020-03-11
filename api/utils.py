@@ -65,7 +65,7 @@ def jsonify_errors(error):
     # :details disallowed-key,
     # :status disallowed-key,
     # etc.
-    error['code'] = error.pop('status').lower()
+    error['code'] = error.pop('status', '').lower()
     error.pop('details', None)
 
     # According to the official documentation, an error here means that the
