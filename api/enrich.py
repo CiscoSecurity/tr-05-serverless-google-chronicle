@@ -2,7 +2,6 @@ from functools import partial
 
 from flask import Blueprint, current_app
 
-from api.errors import TRFormattedException
 from api.mappings import Mapping
 from api.schemas import ObservableSchema
 from api.utils import (
@@ -10,7 +9,7 @@ from api.utils import (
     get_chronicle_http_client,
     get_jwt,
     get_json,
-    jsonify_errors)
+)
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -19,31 +18,27 @@ get_observables = partial(get_json, schema=ObservableSchema(many=True))
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
 def deliberate_observables():
-    try:
-        http_client = get_chronicle_http_client(get_jwt())
-        observables = get_observables()
+    http_client = get_chronicle_http_client(get_jwt())
+    observables = get_observables()
 
-        def _observe(observable):
-            type_ = observable['type']
-            value = observable['value']
+    def _observe(observable):
+        type_ = observable['type']
+        value = observable['value']
 
-            mapping = Mapping.of(type_, current_app.config['API_URL'],
-                                 http_client)
+        mapping = Mapping.of(type_, current_app.config['API_URL'],
+                             http_client)
 
-            return mapping.get(value) if mapping is not None else []
+        return mapping.get(value) if mapping is not None else []
 
-        data = (_observe(x) for x in observables)
-        data = list(data) or {}
+    data = (_observe(x) for x in observables)
+    data = list(data) or {}
 
-        return jsonify_data({
-            'sightings': {
-                'count': len(data),
-                'docs': data
-            }
-        })
-
-    except TRFormattedException as error:
-        return jsonify_errors(error)
+    return jsonify_data({
+        'sightings': {
+            'count': len(data),
+            'docs': data
+        }
+    })
 
 
 @enrich_api.route('/observe/observables', methods=['POST'])

@@ -23,7 +23,8 @@ class UnexpectedChronicleResponseError(TRFormattedException):
 
         super().__init__(
             error_payload.get('status', '').lower(),
-            error_payload.get('details', None)
+            error_payload.get('message', None)
+            or error_payload.get('details', None)
         )
 
 

@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from pytest import fixture
 
+from . import invalid_jwt_error
 from .utils import headers
 
 
@@ -17,12 +18,14 @@ def route(request):
 
 def test_respond_call_without_jwt_failure(route, client):
     response = client.post(route)
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['errors'] == [invalid_jwt_error]
 
 
 def test_respond_call_with_invalid_jwt_failure(route, client, invalid_jwt):
     response = client.post(route, headers=headers(invalid_jwt))
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['errors'] == [invalid_jwt_error]
 
 
 @fixture(scope='module')
@@ -43,7 +46,9 @@ def test_respond_call_with_valid_jwt_but_invalid_json_failure(route,
     response = client.post(route,
                            headers=headers(valid_jwt),
                            json=invalid_json)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json['errors']) == 1
+    assert response.json['errors'][0]['code'] == 'invalid_argument'
 
 
 @fixture(scope='module')

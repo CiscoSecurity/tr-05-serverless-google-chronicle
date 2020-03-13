@@ -72,7 +72,7 @@ class Mapping(metaclass=ABCMeta):
     def get(self, observable):
         """Retries and maps Chronicle Assets and IoC details to CTIM."""
         assets = self._list_assets(observable)
-        ioc_details = self._list_ioc_details(observable)
+        # ToDO: ioc_details = self._list_ioc_details(observable)
 
         return self.map(observable, assets)
 

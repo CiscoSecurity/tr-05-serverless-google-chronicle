@@ -16,19 +16,26 @@ def route(request):
     return request.param
 
 
-def test_enrich_call_without_jwt_failure(route, client):
-    response = client.post(route)
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
-def test_enrich_call_with_invalid_jwt_failure(route, client, invalid_jwt):
-    response = client.post(route, headers=headers(invalid_jwt))
-    assert response.status_code == HTTPStatus.FORBIDDEN
+invalid_jwt_error = {'code': 'permission_denied',
+                     'message': 'Invalid Authorization Bearer JWT.',
+                     'type': 'fatal'}
 
 
 @fixture(scope='module')
 def invalid_json():
     return [{'type': 'unknown', 'value': ''}]
+
+
+def test_enrich_call_without_jwt_failure(route, client):
+    response = client.post(route)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['errors'] == [invalid_jwt_error]
+
+
+def test_enrich_call_with_invalid_jwt_failure(route, client, invalid_jwt):
+    response = client.post(route, headers=headers(invalid_jwt))
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['errors'] == [invalid_jwt_error]
 
 
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(route,
@@ -38,7 +45,7 @@ def test_enrich_call_with_valid_jwt_but_invalid_json_failure(route,
     response = client.post(route,
                            headers=headers(valid_jwt),
                            json=invalid_json)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.OK
 
 
 @fixture(scope='module')
