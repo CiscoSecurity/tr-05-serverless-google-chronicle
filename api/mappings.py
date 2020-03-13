@@ -4,10 +4,11 @@ from uuid import uuid4
 
 from datetime import datetime, timedelta
 
+from api.errors import UnexpectedChronicleResponseError
 from api.utils import (
     join_url,
-    format_time_to_arg,
-    jsonify_errors)
+    format_time_to_arg
+)
 
 
 class TimeFilter:
@@ -27,12 +28,6 @@ class TimeFilter:
     def __str__(self):
         return (f'&start_time={format_time_to_arg(self.start)}'
                 f'&end_time={format_time_to_arg(self.end)}')
-
-
-class UnexpectedChronicleResponseError(Exception):
-    def __init__(self, error_payload, *args, **kwargs):
-        super().__init__(args, kwargs)
-        self.json = jsonify_errors(json.loads(error_payload).get('error'))
 
 
 class Mapping(metaclass=ABCMeta):
