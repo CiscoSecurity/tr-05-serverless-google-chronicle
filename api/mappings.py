@@ -74,7 +74,7 @@ class Mapping(metaclass=ABCMeta):
         assets = self._list_assets(observable)
         # ToDO: ioc_details = self._list_ioc_details(observable)
 
-        return self.map(observable, assets)
+        return self.map(assets)
 
     @classmethod
     @abstractmethod
@@ -85,15 +85,66 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns a relative URL to Graph Security to query alerts."""
 
-    def map(self, observable, data):
+    def map(self, data):
         """Maps a Graph Security response to CTIM."""
-        # ToDo:
-        return {
-            'id': f'transient:{uuid4()}',
-            'count': 1,
-            'source': 'Chronicle Backstory',
-            'type': 'sighting'
+        assets = data.get('assets', [])
+        sightings = []
+
+        def sighting(asset, artifact):
+            return {
+                'id': f'transient:{uuid4()}',
+                'type': 'sighting',
+                'schema_version': '1.0.16',
+                'confidence': 'High',
+                'count': len(assets),
+                'source': 'Chronicle',
+                'source_uri': data['uri'][0],
+                'internal': 'True',
+                'title': 'Found in Chronicle',
+                'observables': [
+                    self.artifact_to_observable(
+                        artifact['artifactIndicator'])
+                ],
+                'observed_time': {
+                    'start_time':
+                        artifact['seenTime']
+                },
+
+                "targets": [
+                    {
+                        "type": "endpoint",
+                        "observables": self.asset_to_observables(asset),
+                        "observed_time": {'start_time': artifact['seenTime']}
+                    }
+                ]
+
+            }
+
+        for asset in assets:
+            sightings.append(sighting(asset['asset'],
+                                      asset['firstSeenArtifactInfo']))
+            sightings.append(sighting(asset['asset'],
+                                      asset['lastSeenArtifactInfo']))
+
+        return sightings
+
+    @staticmethod
+    def asset_to_observables(asset):
+        type_map = {
+            'hostname': 'hostname',
+            'assetIpAddress': 'ip'
+            # ToDO: "???": 'mac_address',
         }
+
+        # ToDo: differ ip and ipv6
+        return [{"value": v,
+                 "type": type_map.get(k, k)} for k, v in asset.items()]
+
+    def artifact_to_observable(self, artifact_indicator):
+        # ToDo: find better solution???
+        values = list(artifact_indicator.values())
+        return {'type': self.type(),
+                'value': values[0]}
 
 
 class Domain(Mapping):
@@ -111,6 +162,16 @@ class IP(Mapping):
     @classmethod
     def type(cls):
         return 'ip'
+
+    def filter(self, observable):
+        return f'artifact.destination_ip_address={observable}'
+
+
+class IPV6(IP):
+
+    @classmethod
+    def type(cls):
+        return 'ipv6'
 
     def filter(self, observable):
         return f'artifact.destination_ip_address={observable}'
