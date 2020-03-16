@@ -27,7 +27,7 @@ def test_positive_smoke_enrich_health(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains status Ok
-        from Chronicle Backstory module
+            from Chronicle Backstory module
 
     Importance: Critical
     """
