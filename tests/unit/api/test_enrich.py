@@ -9,6 +9,7 @@ from .utils import headers
 
 def routes():
     yield '/deliberate/observables'
+    yield '/observe/observables'
     yield '/refer/observables'
 
 
@@ -32,15 +33,17 @@ def invalid_jwt_expected_payload(route):
 
 @fixture(scope='module')
 def invalid_json():
-    return [{'type': 'unknown', 'value': ''}]
+    return [{'type': 'domain'}]
 
 
 @fixture(scope='module')
 def invalid_json_expected_payload(route, client):
     if route.endswith('/observe/observables'):
-        return {'errors': [{'code': 'permission_denied',
-                            'message': 'Invalid Authorization Bearer JWT.',
-                            'type': 'fatal'}]}
+        return {'errors': [
+            {'code': 'invalid_argument',
+             'message': "{0: {'value': ['Missing data for required field.']}}",
+             'type': 'fatal'}
+        ]}
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
