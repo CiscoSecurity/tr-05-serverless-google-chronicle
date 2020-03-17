@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 
 from api.enrich import enrich_api
-from api.errors import TRFormattedException
+from api.errors import TRFormattedError
 from api.health import health_api
 from api.respond import respond_api
 from api.utils import jsonify_errors
@@ -29,7 +29,7 @@ def handle_error(exception):
     return response, code
 
 
-@app.errorhandler(TRFormattedException)
+@app.errorhandler(TRFormattedError)
 def handle_tr_formatted_error(exception):
     return jsonify_errors(exception)
 

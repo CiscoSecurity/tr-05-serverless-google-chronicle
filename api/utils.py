@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
@@ -7,7 +9,7 @@ from googleapiclient import _auth
 from api.errors import (
     InvalidJWTError,
     InvalidChronicleCredentialsError,
-    TRFormattedException,
+    TRFormattedError,
     InvalidArgumentError
 )
 
@@ -65,7 +67,7 @@ def jsonify_data(data):
 
 
 def jsonify_errors(error):
-    if issubclass(type(error), TRFormattedException):
+    if issubclass(type(error), TRFormattedError):
         error = error.json
 
     return jsonify({'errors': [error.json]})
@@ -78,10 +80,25 @@ def join_url(base, *parts):
     )
 
 
-def format_time_to_arg(input_datetime):
-    """
-       Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
-       acceptable by Chronicle Backstory API
+class TimeFilter:
+    def __init__(self):
+        self.end = datetime.utcnow()
+        delta = timedelta(
+            days=current_app.config[
+                'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
+            ]
+        )
+        self.start = self.end - delta
 
-    """
-    return f'{input_datetime.isoformat(timespec="seconds")}Z'
+    @staticmethod
+    def format_time_to_arg(input_datetime):
+        """
+           Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
+           acceptable by Chronicle Backstory API
+
+        """
+        return f'{input_datetime.isoformat(timespec="seconds")}Z'
+
+    def __str__(self):
+        return (f'&start_time={self.format_time_to_arg(self.start)}'
+                f'&end_time={self.format_time_to_arg(self.end)}')

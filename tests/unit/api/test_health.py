@@ -32,7 +32,8 @@ def test_health_call_with_invalid_jwt_failure(route, client, invalid_jwt):
 def test_health_call_with_unauthorized_creds_failure(route, client, valid_jwt):
     chronicle_client_mock = ChronicleClientMock(
         HTTPStatus.FORBIDDEN,
-        json.dumps({"error": {"code": 403, "message": "Wrong creds!",
+        json.dumps({"error": {"code": HTTPStatus.FORBIDDEN,
+                              "message": "Wrong creds!",
                               "status": "PERMISSION_DENIED"}})
     )
 

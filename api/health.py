@@ -1,12 +1,14 @@
+from http import HTTPStatus
+
 from flask import Blueprint, current_app
 
 from api.errors import UnexpectedChronicleResponseError
-from api.mappings import TimeFilter
 from api.utils import (
     jsonify_data,
     get_chronicle_http_client,
     get_jwt,
-    join_url
+    join_url,
+    TimeFilter
 )
 
 health_api = Blueprint('health', __name__)
@@ -28,7 +30,7 @@ def health():
                              'Accept': 'application/json'}
     )
 
-    if response.status != 200:
+    if response.status != HTTPStatus.OK:
         raise UnexpectedChronicleResponseError(body)
     else:
         return jsonify_data({'status': 'ok'})

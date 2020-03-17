@@ -3,7 +3,7 @@ import json
 from flask import jsonify
 
 
-class TRFormattedException(Exception):
+class TRFormattedError(Exception):
     def __init__(self, code, message, type_='fatal'):
         super().__init__()
         self.code = code or 'unknown'
@@ -17,7 +17,7 @@ class TRFormattedException(Exception):
                         'message': self.message})
 
 
-class UnexpectedChronicleResponseError(TRFormattedException):
+class UnexpectedChronicleResponseError(TRFormattedError):
     def __init__(self, payload):
         error_payload = json.loads(payload).get('error', {})
 
@@ -28,7 +28,7 @@ class UnexpectedChronicleResponseError(TRFormattedException):
         )
 
 
-class InvalidJWTError(TRFormattedException):
+class InvalidJWTError(TRFormattedError):
     def __init__(self):
         super().__init__(
             'permission_denied',
@@ -36,7 +36,7 @@ class InvalidJWTError(TRFormattedException):
         )
 
 
-class InvalidChronicleCredentialsError(TRFormattedException):
+class InvalidChronicleCredentialsError(TRFormattedError):
     def __init__(self, error):
         super().__init__(
             'permission_denied',
@@ -44,7 +44,7 @@ class InvalidChronicleCredentialsError(TRFormattedException):
         )
 
 
-class InvalidArgumentError(TRFormattedException):
+class InvalidArgumentError(TRFormattedError):
     def __init__(self, error):
         super().__init__(
             'invalid_argument',

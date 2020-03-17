@@ -1,33 +1,10 @@
 import json
 from abc import ABCMeta, abstractmethod
+from http import HTTPStatus
 from uuid import uuid4
 
-from datetime import datetime, timedelta
-
 from api.errors import UnexpectedChronicleResponseError
-from api.utils import (
-    join_url,
-    format_time_to_arg
-)
-
-
-class TimeFilter:
-    def __init__(self, start_time=None, end_time=None):
-        self.end = end_time or datetime.utcnow()
-        self.start = start_time or self.end - timedelta(days=90)
-
-    @staticmethod
-    def format_time_to_arg(input_datetime):
-        """
-           Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
-           acceptable by Chronicle Backstory API
-
-        """
-        return f'{input_datetime.isoformat(timespec="seconds")}Z'
-
-    def __str__(self):
-        return (f'&start_time={format_time_to_arg(self.start)}'
-                f'&end_time={format_time_to_arg(self.end)}')
+from api.utils import join_url, TimeFilter
 
 
 class Mapping(metaclass=ABCMeta):
@@ -57,7 +34,7 @@ class Mapping(metaclass=ABCMeta):
                                  'Accept': 'application/json'}
         )
 
-        if response.status != 200:
+        if response.status != HTTPStatus.OK:
             raise UnexpectedChronicleResponseError(body)
 
         return json.loads(body)
@@ -70,7 +47,7 @@ class Mapping(metaclass=ABCMeta):
         return self._request_chronicle('artifact/listiocdetails', observable)
 
     def get(self, observable):
-        """Retries and maps Chronicle Assets and IoC details to CTIM."""
+        """Retrieves and maps Chronicle Assets and IoC details to CTIM."""
         assets = self._list_assets(observable)
         # ToDO: ioc_details = self._list_ioc_details(observable)
 
@@ -83,10 +60,11 @@ class Mapping(metaclass=ABCMeta):
 
     @abstractmethod
     def filter(self, observable):
-        """Returns a relative URL to Graph Security to query alerts."""
+        """Returns an artifact filter to query Chronicle."""
 
     def map(self, data):
-        """Maps a Graph Security response to CTIM."""
+        """Maps a Chronicle response to CTIM."""
+
         assets = data.get('assets', [])
         sightings = []
 

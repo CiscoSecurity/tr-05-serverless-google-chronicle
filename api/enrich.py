@@ -19,8 +19,6 @@ get_observables = partial(get_json, schema=ObservableSchema(many=True))
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
 def deliberate_observables():
-    _ = get_jwt()
-    _ = get_observables()
     return jsonify_data({})
 
 
@@ -52,6 +50,4 @@ def observe_observables():
 
 @enrich_api.route('/refer/observables', methods=['POST'])
 def refer_observables():
-    _ = get_jwt()
-    _ = get_observables()
     return jsonify_data([])
