@@ -1,9 +1,16 @@
+from datetime import datetime, timedelta
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
 from google.oauth2 import service_account
 from googleapiclient import _auth
-from werkzeug.exceptions import Forbidden, BadRequest
+
+from api.errors import (
+    InvalidJWTError,
+    InvalidChronicleCredentialsError,
+    InvalidArgumentError
+)
 
 
 def get_jwt():
@@ -18,7 +25,7 @@ def get_jwt():
         assert scheme.lower() == 'bearer'
         return jwt.decode(token, current_app.config['SECRET_KEY'])
     except (KeyError, ValueError, AssertionError, JoseError):
-        raise Forbidden('Invalid Authorization Bearer JWT.')
+        raise InvalidJWTError()
 
 
 def get_chronicle_http_client(account_info):
@@ -32,7 +39,7 @@ def get_chronicle_http_client(account_info):
             account_info, scopes=current_app.config['AUTH_SCOPES']
         )
     except ValueError as e:
-        raise Forbidden(f'Chronicle Backstory Authorization failed: {str(e)}.')
+        raise InvalidChronicleCredentialsError(str(e))
 
     return _auth.authorized_http(credentials)
 
@@ -49,7 +56,7 @@ def get_json(schema):
     message = schema.validate(data)
 
     if message:
-        raise BadRequest(message)
+        raise InvalidArgumentError(message)
 
     return data
 
@@ -59,21 +66,6 @@ def jsonify_data(data):
 
 
 def jsonify_errors(error):
-    # Make the actual error payload compatible with the expected TR error
-    # payload in order to fix the following types of possible UI alerts, e.g.:
-    # :code (not (instance? java.lang.String 40x)),
-    # :details disallowed-key,
-    # :status disallowed-key,
-    # etc.
-    error['code'] = error.pop('status').lower()
-    error.pop('details', None)
-
-    # According to the official documentation, an error here means that the
-    # corresponding TR module is in an incorrect state and needs to be
-    # reconfigured:
-    # https://visibility.amp.cisco.com/help/alerts-errors-warnings.
-    error['type'] = 'fatal'
-
     return jsonify({'errors': [error]})
 
 
@@ -84,10 +76,25 @@ def join_url(base, *parts):
     )
 
 
-def format_time_to_arg(input_datetime):
-    """
-       Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
-       acceptable by Chronicle Backstory API
+class TimeFilter:
+    def __init__(self):
+        self.end = datetime.utcnow()
+        delta = timedelta(
+            days=current_app.config[
+                'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
+            ]
+        )
+        self.start = self.end - delta
 
-    """
-    return f'{input_datetime.isoformat(timespec="seconds")}Z'
+    @staticmethod
+    def format_time_to_arg(input_datetime):
+        """
+           Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
+           acceptable by Chronicle Backstory API
+
+        """
+        return f'{input_datetime.isoformat(timespec="seconds")}Z'
+
+    def __str__(self):
+        return (f'&start_time={self.format_time_to_arg(self.start)}'
+                f'&end_time={self.format_time_to_arg(self.end)}')
