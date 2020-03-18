@@ -1,8 +1,12 @@
+import json
 from datetime import datetime
+from http import HTTPStatus
+from unittest.mock import MagicMock
 
 from authlib.jose import jwt
 from pytest import fixture
 
+from api.errors import PERMISSION_DENIED, INVALID_ARGUMENT
 from app import app
 
 
@@ -20,6 +24,31 @@ def client(secret_key):
 
     with app.test_client() as client:
         yield client
+
+
+class ChronicleClientMock:
+    def __init__(self, status_code, response_body):
+        self.__response_mock = MagicMock()
+        self.__response_mock.status = status_code
+        self.__response_body = response_body
+
+    def request(self, *args, **kwargs):
+        return self.__response_mock, self.__response_body
+
+
+@fixture(scope='session')
+def chronicle_client_unauthorized_creds(secret_key):
+    return ChronicleClientMock(
+        HTTPStatus.FORBIDDEN,
+        json.dumps({"error": {"code": HTTPStatus.FORBIDDEN,
+                              "message": "Wrong creds!",
+                              "status": PERMISSION_DENIED}})
+    )
+
+
+@fixture(scope='session')
+def chronicle_client_ok(secret_key):
+    return ChronicleClientMock(HTTPStatus.OK, '{}')
 
 
 @fixture(scope='session')
@@ -58,11 +87,64 @@ def invalid_jwt_expected_payload(route):
     if route in ('/observe/observables', '/health'):
         return {
             'errors': [
-                {'code': 'permission_denied',
+                {'code': PERMISSION_DENIED,
                  'message': 'Invalid Authorization Bearer JWT.',
                  'type': 'fatal'}
             ]
         }
+
+    if route.endswith('/deliberate/observables'):
+        return {'data': {}}
+
+    if route.endswith('/refer/observables'):
+        return {'data': []}
+
+
+@fixture(scope='module')
+def unauthorized_creds_expected_payload(route):
+    if route in ('/observe/observables', '/health'):
+        return {
+            'errors': [
+                {'code': PERMISSION_DENIED,
+                 'message': 'Wrong creds!',
+                 'type': 'fatal'}
+            ]
+        }
+
+    if route.endswith('/deliberate/observables'):
+        return {'data': {}}
+
+    if route.endswith('/refer/observables'):
+        return {'data': []}
+
+
+@fixture(scope='module')
+def invalid_creds_expected_payload(route):
+    if route in ('/observe/observables', '/health'):
+        return {
+            'errors': [
+                {'code': PERMISSION_DENIED,
+                 'message': ('Chronicle Backstory Authorization failed:'
+                             ' Wrong structure.'),
+                 'type': 'fatal'}
+            ]
+        }
+
+    if route.endswith('/deliberate/observables'):
+        return {'data': {}}
+
+    if route.endswith('/refer/observables'):
+        return {'data': []}
+
+
+@fixture(scope='module')
+def invalid_json_expected_payload(route, client):
+    if route.endswith('/observe/observables'):
+        return {'errors': [
+            {'code': INVALID_ARGUMENT,
+             'message': "{0: {'value': ['Missing data for required field.']}}",
+             'type': 'fatal'}
+        ]}
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
