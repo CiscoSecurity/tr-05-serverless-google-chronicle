@@ -1,9 +1,5 @@
 from unittest.mock import MagicMock
 
-invalid_jwt_error = {'code': 'permission_denied',
-                     'message': 'Invalid Authorization Bearer JWT.',
-                     'type': 'fatal'}
-
 
 class ChronicleClientMock:
     def __init__(self, status_code, response_body):

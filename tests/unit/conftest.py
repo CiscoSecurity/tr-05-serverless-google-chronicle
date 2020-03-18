@@ -51,3 +51,20 @@ def invalid_jwt(valid_jwt, secret_key):
     payload = jwt_encode(payload)
 
     return '.'.join([header, payload, signature])
+
+
+@fixture(scope='module')
+def invalid_jwt_expected_payload(route):
+    if route in ('/observe/observables', '/health'):
+        return {
+            'errors': [
+                {'code': 'permission_denied',
+                 'message': 'Invalid Authorization Bearer JWT.',
+                 'type': 'fatal'}
+            ]
+        }
+
+    if route.endswith('/deliberate/observables'):
+        return {'data': {}}
+
+    return {'data': []}

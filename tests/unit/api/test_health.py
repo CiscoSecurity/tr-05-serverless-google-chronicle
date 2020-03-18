@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from pytest import fixture
 
-from . import invalid_jwt_error, ChronicleClientMock
+from . import ChronicleClientMock
 from .utils import headers
 
 
@@ -17,16 +17,18 @@ def route(request):
     return request.param
 
 
-def test_health_call_without_jwt_failure(route, client):
+def test_health_call_without_jwt_failure(route, client,
+                                         invalid_jwt_expected_payload):
     response = client.post(route)
     assert response.status_code == HTTPStatus.OK
-    assert response.json['errors'] == [invalid_jwt_error]
+    assert response.json == invalid_jwt_expected_payload
 
 
-def test_health_call_with_invalid_jwt_failure(route, client, invalid_jwt):
+def test_health_call_with_invalid_jwt_failure(route, client, invalid_jwt,
+                                              invalid_jwt_expected_payload):
     response = client.post(route, headers=headers(invalid_jwt))
     assert response.status_code == HTTPStatus.OK
-    assert response.json['errors'] == [invalid_jwt_error]
+    assert response.json == invalid_jwt_expected_payload
 
 
 def test_health_call_with_unauthorized_creds_failure(route, client, valid_jwt):

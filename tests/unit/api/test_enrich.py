@@ -19,19 +19,6 @@ def route(request):
 
 
 @fixture(scope='module')
-def invalid_jwt_expected_payload(route):
-    if route.endswith('/observe/observables'):
-        return {'errors': [{'code': 'permission_denied',
-                            'message': 'Invalid Authorization Bearer JWT.',
-                            'type': 'fatal'}]}
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    return {'data': []}
-
-
-@fixture(scope='module')
 def invalid_json():
     return [{'type': 'domain'}]
 
