@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from mock import patch
+from unittest.mock import patch
 from pytest import fixture
 
 from .utils import headers

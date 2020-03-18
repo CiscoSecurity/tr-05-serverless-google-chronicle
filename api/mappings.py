@@ -77,7 +77,7 @@ class Mapping(metaclass=ABCMeta):
                 'count': len(assets),
                 'source': 'Chronicle',
                 'source_uri': data['uri'][0],
-                'internal': 'True',
+                'internal': True,
                 'title': 'Found in Chronicle',
                 'observables': [
                     self.artifact_to_observable(
