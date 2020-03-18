@@ -2,5 +2,4 @@ google-api-python-client==1.7.11
 google==2.0.3
 Authlib==0.14.1
 Flask==1.1.1
-marshmallow==3.4.0
-Werkzeug==1.0.0
+marshmallow==3.5.1
