@@ -1,7 +1,5 @@
 import json
 
-from flask import jsonify
-
 
 class TRFormattedError(Exception):
     def __init__(self, code, message, type_='fatal'):
@@ -12,9 +10,9 @@ class TRFormattedError(Exception):
 
     @property
     def json(self):
-        return jsonify({'type': self.type_,
-                        'code': self.code,
-                        'message': self.message})
+        return {'type': self.type_,
+                'code': self.code,
+                'message': self.message}
 
 
 class UnexpectedChronicleResponseError(TRFormattedError):

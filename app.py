@@ -30,8 +30,8 @@ def handle_error(exception):
 
 
 @app.errorhandler(TRFormattedError)
-def handle_tr_formatted_error(exception):
-    return jsonify_errors(exception)
+def handle_tr_formatted_error(error):
+    return jsonify_errors(error.json)
 
 
 if __name__ == '__main__':

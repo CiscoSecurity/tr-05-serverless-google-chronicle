@@ -9,7 +9,6 @@ from googleapiclient import _auth
 from api.errors import (
     InvalidJWTError,
     InvalidChronicleCredentialsError,
-    TRFormattedError,
     InvalidArgumentError
 )
 
@@ -67,10 +66,7 @@ def jsonify_data(data):
 
 
 def jsonify_errors(error):
-    if issubclass(type(error), TRFormattedError):
-        error = error.json
-
-    return jsonify({'errors': [error.json]})
+    return jsonify({'errors': [error]})
 
 
 def join_url(base, *parts):
