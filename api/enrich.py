@@ -1,5 +1,4 @@
 from functools import partial
-from itertools import chain
 
 from flask import Blueprint, current_app
 
@@ -34,16 +33,23 @@ def observe_observables():
         mapping = Mapping.of(type_, current_app.config['API_URL'],
                              http_client)
 
-        return mapping.get(value) if mapping is not None else []
+        return mapping.get(value) if mapping is not None else ([], [])
 
-    data = (_observe(x) for x in observables)
-    data = chain.from_iterable(data)
-    data = list(data)
+    sightings = []
+    indicators = []
+    for x in observables:
+        s, i = _observe(x)
+        sightings = [*sightings, *s]
+        indicators = [*indicators, *i]
 
     return jsonify_data({
         'sightings': {
-            'count': len(data),
-            'docs': data
+            'count': len(sightings),
+            'docs': sightings
+        },
+        'indicators': {
+            'count': len(indicators),
+            'docs': indicators
         }
     })
 

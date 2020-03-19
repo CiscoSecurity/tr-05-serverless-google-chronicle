@@ -49,9 +49,9 @@ class Mapping(metaclass=ABCMeta):
     def get(self, observable):
         """Retrieves and maps Chronicle Assets and IoC details to CTIM."""
         assets = self._list_assets(observable)
-        # ToDO: ioc_details = self._list_ioc_details(observable)
+        ioc_details = self._list_ioc_details(observable)
 
-        return self.map(assets)
+        return self.map(assets, ioc_details)
 
     @classmethod
     @abstractmethod
@@ -62,10 +62,10 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns an artifact filter to query Chronicle."""
 
-    def map(self, data):
+    def map(self, assets_data, ioc_details):
         """Maps a Chronicle response to CTIM."""
 
-        assets = data.get('assets', [])
+        assets = assets_data.get('assets', [])
         sightings = []
 
         def sighting(asset, artifact):
@@ -76,7 +76,7 @@ class Mapping(metaclass=ABCMeta):
                 'confidence': 'High',
                 'count': len(assets),
                 'source': 'Chronicle',
-                'source_uri': data['uri'][0],
+                'source_uri': assets_data['uri'][0],
                 'internal': True,
                 'title': 'Found in Chronicle',
                 'observables': [
@@ -88,15 +88,35 @@ class Mapping(metaclass=ABCMeta):
                         artifact['seenTime']
                 },
 
-                "targets": [
+                'targets': [
                     {
-                        "type": "endpoint",
-                        "observables": self.asset_to_observables(asset),
-                        "observed_time": {'start_time': artifact['seenTime']}
+                        'type': 'endpoint',
+                        'observables': self.asset_to_observables(asset),
+                        'observed_time': {'start_time': artifact['seenTime']}
                     }
                 ]
 
             }
+
+        def indicator(source):
+            r = {
+                'type': 'indicator',
+                'schema_version': '1.0.16',
+                'producer': 'Chronicle',
+                'valid_time': [],
+                'confidence': self.confidence(source.get('confidenceScore', {}).get('strRawConfidenceScore')),
+                'severity': self.severity(source.get('rawSeverity')),
+                'short_description': source['category'],
+            }
+
+            source_url = source.get('sourceUrl')
+            if source_url:
+                r['external_references'] = [
+                    {"source_name": "Chronicle IOC",
+                     "url": source_url}
+                ]
+
+            return r
 
         for asset in assets:
             sightings.append(sighting(asset['asset'],
@@ -104,7 +124,45 @@ class Mapping(metaclass=ABCMeta):
             sightings.append(sighting(asset['asset'],
                                       asset['lastSeenArtifactInfo']))
 
-        return sightings
+        sources = ioc_details.get('sources', [])
+        indicators = [indicator(source) for source in sources]
+
+        return sightings, indicators
+
+    @staticmethod
+    def confidence(raw_confidence_score):
+        # ToDo: This field may be a string "High", "Low", etc
+        #  or it may be a number as a string between 0 and 127 "71", "124".
+        #  Will need some logic to map those values to the required
+        #  High, Medium, Low for now just split them evenly
+
+        if raw_confidence_score is None:
+            return 'None'
+
+        segments = [
+            (43, 'Low'),
+            (86, 'Medium'),
+            (127, 'High')
+        ]
+
+        if raw_confidence_score in ('Low', 'Medium', 'High'):
+            return raw_confidence_score
+
+        try:
+            for bound, result in segments:
+                if int(raw_confidence_score) <= bound:
+                    return result
+        except ValueError:
+            pass
+
+        return 'Unknown'
+
+    @staticmethod
+    def severity(raw_severity):
+        # ToDo: Finding out what the possible values are have only seen "High".
+        #  The value is not always present in the response
+        #  Got "Info"
+        return raw_severity
 
     @staticmethod
     def asset_to_observables(asset):
