@@ -39,6 +39,7 @@ def test_md5_filter(client):
 
 def test_md5_map(client):
     base_url = client.application.config['API_URL']
+    # ToDo: Add more data to file md5.json.
     assert_maps_correctly(MD5(base_url, client), 'md5.json')
 
 
@@ -52,6 +53,7 @@ def test_sha256_filter(client):
 
 def test_sha256_map(client):
     base_url = client.application.config['API_URL']
+    # ToDo: Add more data to file sha256.json.
     assert_maps_correctly(SHA256(base_url, client), 'sha256.json')
 
 
@@ -65,7 +67,8 @@ def test_sha1_filter(client):
 
 def test_sha1_map(client):
     base_url = client.application.config['API_URL']
-    assert_maps_correctly(SHA1(base_url, client), 'sha256.json')
+    # ToDo: Add more data to file sha1.json.
+    assert_maps_correctly(SHA1(base_url, client), 'sha1.json')
 
 
 def test_ip_filter(client):
@@ -94,12 +97,13 @@ def test_ipv6_filter(client):
 
 def test_ipv6_map(client):
     base_url = client.application.config['API_URL']
+    # ToDo: Add more data to file ipv6.json.
     assert_maps_correctly(IPV6(base_url, client), 'ipv6.json')
 
 
 def assert_maps_correctly(mapping, path):
     with open('tests/unit/data/' + path) as file:
-        data = json.loads(file.read())
+        data = json.load(file)
         output = mapping.map(data['input'])
         for sighting in output:
             assert sighting.pop('id').startswith('transient:')
