@@ -85,8 +85,10 @@ def test_ipv6_filter(client):
     mapping = IPV6(base_url, client)
     url = mapping.filter('2001:0db8:85a3:0000:0000:8a2e:0370:7334')
 
-    assert url == f'artifact.destination_ip_address\
-                   =2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+    assert url == (
+        'artifact.destination_ip_address='
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+    )
 
 
 def test_ipv6_map(client):
