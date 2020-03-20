@@ -6,6 +6,14 @@ from uuid import uuid4
 from api.errors import UnexpectedChronicleResponseError
 from api.utils import join_url, TimeFilter
 
+NONE = 'None'
+INFO = 'Info'
+LOW = 'Low'
+MEDIUM = 'Medium'
+HIGH = 'High'
+UNKNOWN = 'Unknown'
+INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
+
 
 class Mapping(metaclass=ABCMeta):
 
@@ -66,7 +74,6 @@ class Mapping(metaclass=ABCMeta):
         """Maps a Chronicle response to CTIM."""
 
         assets = assets_data.get('assets', [])
-        sightings = []
 
         def sighting(asset, artifact):
             return {
@@ -100,11 +107,14 @@ class Mapping(metaclass=ABCMeta):
 
         def indicator(source):
             r = {
+                'id': f'transient:{uuid4()}',
                 'type': 'indicator',
                 'schema_version': '1.0.16',
                 'producer': 'Chronicle',
                 'valid_time': [],
-                'confidence': self.confidence(source.get('confidenceScore', {}).get('strRawConfidenceScore')),
+                'confidence': self.confidence(
+                    source.get('confidenceScore', {}).get(
+                        'strRawConfidenceScore')),
                 'severity': self.severity(source.get('rawSeverity')),
                 'short_description': source['category'],
             }
@@ -118,16 +128,33 @@ class Mapping(metaclass=ABCMeta):
 
             return r
 
+        def relationship(indicator, sighting):
+            return {'type': 'relationship',
+                    'relationship_type': 'sighting-of',
+                    'schema_version': '1.0.16',
+                    'id': f'transient:{uuid4()}',
+                    'source_ref': sighting['id'],
+                    'target_ref': indicator['id']}
+
+        sources = ioc_details.get('sources', [])
+
+        sightings = []
+        relationships = []
+        indicators = []
         for asset in assets:
             sightings.append(sighting(asset['asset'],
                                       asset['firstSeenArtifactInfo']))
             sightings.append(sighting(asset['asset'],
                                       asset['lastSeenArtifactInfo']))
 
-        sources = ioc_details.get('sources', [])
-        indicators = [indicator(source) for source in sources]
+        for source in sources:
+            i = indicator(source)
+            indicators.append(i)
 
-        return sightings, indicators
+            for s in sightings:
+                relationships.append(relationship(i, s))
+
+        return sightings, indicators, relationships
 
     @staticmethod
     def confidence(raw_confidence_score):
@@ -137,32 +164,38 @@ class Mapping(metaclass=ABCMeta):
         #  High, Medium, Low for now just split them evenly
 
         if raw_confidence_score is None:
-            return 'None'
+            return NONE
 
-        segments = [
-            (43, 'Low'),
-            (86, 'Medium'),
-            (127, 'High')
-        ]
-
-        if raw_confidence_score in ('Low', 'Medium', 'High'):
+        if raw_confidence_score in INDICATOR_SCORES:
             return raw_confidence_score
 
         try:
+            segments = [
+                (43, LOW),
+                (86, MEDIUM),
+                (127, HIGH)
+            ]
+
             for bound, result in segments:
                 if int(raw_confidence_score) <= bound:
                     return result
         except ValueError:
             pass
 
-        return 'Unknown'
+        return UNKNOWN
 
     @staticmethod
     def severity(raw_severity):
         # ToDo: Finding out what the possible values are have only seen "High".
         #  The value is not always present in the response
         #  Got "Info"
-        return raw_severity
+        if raw_severity is None:
+            return NONE
+
+        if raw_severity in INDICATOR_SCORES:
+            return raw_severity
+
+        return UNKNOWN
 
     @staticmethod
     def asset_to_observables(asset):
@@ -177,7 +210,7 @@ class Mapping(metaclass=ABCMeta):
                  "type": type_map.get(k, k)} for k, v in asset.items()]
 
     def artifact_to_observable(self, artifact_indicator):
-        # ToDo: find better solution???
+        # ToDo: find solution - you can request ip and get domain as artifact!!
         values = list(artifact_indicator.values())
         return {'type': self.type(),
                 'value': values[0]}

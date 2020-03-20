@@ -33,14 +33,16 @@ def observe_observables():
         mapping = Mapping.of(type_, current_app.config['API_URL'],
                              http_client)
 
-        return mapping.get(value) if mapping is not None else ([], [])
+        return mapping.get(value) if mapping is not None else ([], [], [])
 
     sightings = []
     indicators = []
+    relationships = []
     for x in observables:
-        s, i = _observe(x)
+        s, i, r = _observe(x)
         sightings = [*sightings, *s]
         indicators = [*indicators, *i]
+        relationships = [*relationships, *r]
 
     return jsonify_data({
         'sightings': {
@@ -50,6 +52,10 @@ def observe_observables():
         'indicators': {
             'count': len(indicators),
             'docs': indicators
+        },
+        'relationships': {
+            'count': len(relationships),
+            'docs': relationships
         }
     })
 
