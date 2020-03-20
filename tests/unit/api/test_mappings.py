@@ -95,7 +95,7 @@ def test_ipv6_map(client):
 
 
 def assert_maps_correctly(mapping, path):
-    with open('data/' + path) as file: # !!!!!!!!!!!tests/unit/
+    with open('tests/unit/data/' + path) as file:
         data = json.loads(file.read())
         output = mapping.map(data['input'])
         for sighting in output:
