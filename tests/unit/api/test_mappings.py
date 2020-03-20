@@ -1,8 +1,9 @@
 import json
 
-from api.mappings import \
-    Domain, Mapping, SHA256,\
+from api.mappings import (
+    Domain, Mapping, SHA256,
     IP, IPV6, MD5, SHA1
+)
 
 
 def test_mapping_of(client):
@@ -20,7 +21,7 @@ def test_domain_filter(client):
     mapping = Domain(base_url, client)
     url = mapping.filter('https://www.cisco.com/')
 
-    assert url == f'artifact.domain_name=https://www.cisco.com/'
+    assert url == 'artifact.domain_name=https://www.cisco.com/'
 
 
 def test_domain_map(client):
@@ -33,7 +34,7 @@ def test_md5_filter(client):
     mapping = MD5(base_url, client)
     url = mapping.filter('3a7068e0c9930f')
 
-    assert url == f'artifact.hash_md5=3a7068e0c9930f'
+    assert url == 'artifact.hash_md5=3a7068e0c9930f'
 
 
 def test_md5_map(client):
@@ -46,7 +47,7 @@ def test_sha256_filter(client):
     mapping = SHA256(base_url, client)
     url = mapping.filter('deadbeef')
 
-    assert url == f'artifact.hash_sha256=deadbeef'
+    assert url == 'artifact.hash_sha256=deadbeef'
 
 
 def test_sha256_map(client):
@@ -59,7 +60,7 @@ def test_sha1_filter(client):
     mapping = SHA1(base_url, client)
     url = mapping.filter('cf23df2207')
 
-    assert url == f'artifact.hash_sha1=cf23df2207'
+    assert url == 'artifact.hash_sha1=cf23df2207'
 
 
 def test_sha1_map(client):
@@ -72,7 +73,7 @@ def test_ip_filter(client):
     mapping = IP(base_url, client)
     url = mapping.filter('127.0.0.1')
 
-    assert url == f'artifact.destination_ip_address=127.0.0.1'
+    assert url == 'artifact.destination_ip_address=127.0.0.1'
 
 
 def test_ip_map(client):

@@ -86,6 +86,9 @@ def test_enrich_call_success(
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
+        assert response.status_code == HTTPStatus.OK
+        assert response.json.get('errors') is None
+
         data = response.get_json()
         if type(data["data"]) == dict and data["data"].get("sightings"):
             assert data["data"]["sightings"]["docs"][0].pop("confidence")
@@ -94,6 +97,3 @@ def test_enrich_call_success(
             assert data["data"]["sightings"]["docs"][0].pop("observed_time")
             assert data["data"]["sightings"]["docs"][0].pop("schema_version")
             assert data["data"]["sightings"]["docs"][0].pop("type")
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.json.get('errors') is None
