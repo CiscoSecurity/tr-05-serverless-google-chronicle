@@ -48,7 +48,29 @@ def chronicle_client_unauthorized_creds(secret_key):
 
 @fixture(scope='session')
 def chronicle_client_ok(secret_key):
-    return ChronicleClientMock(HTTPStatus.OK, '{}')
+    payload_success = {
+            "assets": [
+                {
+                    "asset": {"hostname": "ronald-malone-pc"},
+                    "firstSeenArtifactInfo": {
+                        "artifactIndicator": {"domainName": "www.google.com"},
+                        "seenTime": "2018-11-16T08:42:20Z",
+                    },
+                    "lastSeenArtifactInfo": {
+                        "artifactIndicator": {"domainName": "www.google.com"},
+                        "seenTime": "2019-10-15T14:53:57Z",
+                    },
+                },
+            ],
+            "uri": [
+                "https://demodev.backstory.chronicle.security/domainResults?\
+                domain=www.google.com&selectedList=DomainViewDistinctAssets&\
+                whoIsTimestamp=2020-03-19T10%3A33%3A26.529103917Z"
+            ],
+        }
+
+    return ChronicleClientMock(
+        HTTPStatus.OK, json.dumps(payload_success))
 
 
 @fixture(scope='session')

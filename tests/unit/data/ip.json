@@ -1,0 +1,94 @@
+{
+  "input": {
+    "assets": [
+      {
+        "asset": {
+          "hostname": "ina-mackey-laptop"
+        },
+        "firstSeenArtifactInfo": {
+          "artifactIndicator": {
+            "domainName": "snapchat.com"
+          },
+          "seenTime": "2019-02-24T04:45:30Z"
+        },
+        "lastSeenArtifactInfo": {
+          "artifactIndicator": {
+            "domainName": "snapchat.com"
+          },
+          "seenTime": "2020-03-05T19:02:21Z"
+        }
+      }
+    ],
+    "uri": [
+      "https://demodev.backstory.chronicle.security/IpResults?domain=snapchat.com&selectedList=IpViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z"
+    ]
+  },
+  "output": [
+    {
+      "confidence": "High",
+      "count": 1,
+      "internal": true,
+      "observables": [
+        {
+          "type": "ip",
+          "value": "snapchat.com"
+        }
+      ],
+      "observed_time": {
+        "start_time": "2019-02-24T04:45:30Z"
+      },
+      "schema_version": "1.0.16",
+      "source": "Chronicle",
+      "source_uri": "https://demodev.backstory.chronicle.security/IpResults?domain=snapchat.com&selectedList=IpViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
+      "targets": [
+        {
+          "observables": [
+            {
+              "type": "hostname",
+              "value": "ina-mackey-laptop"
+            }
+          ],
+          "observed_time": {
+            "start_time": "2019-02-24T04:45:30Z"
+          },
+          "type": "endpoint"
+        }
+      ],
+      "title": "Found in Chronicle",
+      "type": "sighting"
+    },
+    {
+      "confidence": "High",
+      "count": 1,
+      "internal": true,
+      "observables": [
+        {
+          "type": "ip",
+          "value": "snapchat.com"
+        }
+      ],
+      "observed_time": {
+        "start_time": "2020-03-05T19:02:21Z"
+      },
+      "schema_version": "1.0.16",
+      "source": "Chronicle",
+      "source_uri": "https://demodev.backstory.chronicle.security/IpResults?domain=snapchat.com&selectedList=IpViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
+      "targets": [
+        {
+          "observables": [
+            {
+              "type": "hostname",
+              "value": "ina-mackey-laptop"
+            }
+          ],
+          "observed_time": {
+            "start_time": "2020-03-05T19:02:21Z"
+          },
+          "type": "endpoint"
+        }
+      ],
+      "title": "Found in Chronicle",
+      "type": "sighting"
+    }
+  ]
+}
