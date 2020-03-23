@@ -4,9 +4,9 @@ from ctrlibrary.threatresponse.enrich import enrich_observe_observables
 
 def test_positive_sighting_ip(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable from Chronicle Backstory
+    sightings for observable with ip from Chronicle Backstory
 
-    ID: CCTRI-
+    ID: CCTRI-883-666472f6-db34-4240-8eaf-8fc5347253a5
 
     Steps:
         1. Send request to enrich deliberate observable endpoint
@@ -31,14 +31,13 @@ def test_positive_sighting_ip(module_headers):
         assert sighting['count']
         assert sighting['id']
         assert 'start_time' in sighting['observed_time']
-        assert sighting['schema_version'] == '1.0.16'
+        assert 'schema_version' in sighting
         assert sighting['type'] == 'sighting'
-
         assert sighting['source'] == 'Chronicle'
         assert sighting['title'] == 'Found in Chronicle'
-
+        # Create Bug - https://jira.softserveinc.com/browse/CCTRI-905
         assert (sighting['observables'] ==
-                [{'value': 'dellsupportcenter.com', 'type': 'ip'}])
+                [{'value': 'dellsupportcenter.com', 'type': 'domain'}])
 
         for target in sighting['targets']:
             assert target['type'] == 'endpoint'
@@ -48,9 +47,9 @@ def test_positive_sighting_ip(module_headers):
 
 def test_positive_sighting_domain(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable from Chronicle Backstory
+    sightings for observable with domain from Chronicle Backstory
 
-    ID: CCTRI-
+    ID: CCTRI-883-13cda7fd-1357-4621-98f6-a0dd3789c3cf
 
     Steps:
         1. Send request to enrich deliberate observable endpoint
@@ -75,12 +74,10 @@ def test_positive_sighting_domain(module_headers):
         assert sighting['count']
         assert sighting['id']
         assert 'start_time' in sighting['observed_time']
-        assert sighting['schema_version'] == '1.0.16'
+        assert 'schema_version' in sighting
         assert sighting['type'] == 'sighting'
-
         assert sighting['source'] == 'Chronicle'
         assert sighting['title'] == 'Found in Chronicle'
-
         assert len(sighting['observables']) == 1
         assert sighting['observables'][0]['value'].endswith('google.com')
         assert sighting['observables'][0]['type'] == 'domain'
