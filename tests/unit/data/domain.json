@@ -1,0 +1,94 @@
+{
+  "input": {
+    "assets": [
+      {
+        "asset": {
+          "hostname": "thomas-garcia-laptop"
+        },
+        "firstSeenArtifactInfo": {
+          "artifactIndicator": {
+            "domainName": "www.cisco.com"
+          },
+          "seenTime": "2018-10-10T12:28:19Z"
+        },
+        "lastSeenArtifactInfo": {
+          "artifactIndicator": {
+            "domainName": "cisco.com"
+          },
+          "seenTime": "2020-03-17T05:17:19Z"
+        }
+      }
+    ],
+    "uri": [
+      "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z"
+    ]
+  },
+  "output": [
+    {
+      "confidence": "High",
+      "count": 1,
+      "internal": true,
+      "observables": [
+        {
+          "type": "domain",
+          "value": "www.cisco.com"
+        }
+      ],
+      "observed_time": {
+        "start_time": "2018-10-10T12:28:19Z"
+      },
+      "schema_version": "1.0.16",
+      "source": "Chronicle",
+      "source_uri": "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
+      "targets": [
+        {
+          "observables": [
+            {
+              "type": "hostname",
+              "value": "thomas-garcia-laptop"
+            }
+          ],
+          "observed_time": {
+            "start_time": "2018-10-10T12:28:19Z"
+          },
+          "type": "endpoint"
+        }
+      ],
+      "title": "Found in Chronicle",
+      "type": "sighting"
+    },
+    {
+      "confidence": "High",
+      "count": 1,
+      "internal": true,
+      "observables": [
+        {
+          "type": "domain",
+          "value": "cisco.com"
+        }
+      ],
+      "observed_time": {
+        "start_time": "2020-03-17T05:17:19Z"
+      },
+      "schema_version": "1.0.16",
+      "source": "Chronicle",
+      "source_uri": "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
+      "targets": [
+        {
+          "observables": [
+            {
+              "type": "hostname",
+              "value": "thomas-garcia-laptop"
+            }
+          ],
+          "observed_time": {
+            "start_time": "2020-03-17T05:17:19Z"
+          },
+          "type": "endpoint"
+        }
+      ],
+      "title": "Found in Chronicle",
+      "type": "sighting"
+    }
+  ]
+}
