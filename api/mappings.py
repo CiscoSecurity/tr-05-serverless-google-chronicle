@@ -54,7 +54,7 @@ class Mapping(metaclass=ABCMeta):
         assets = self._list_assets(observable)
         # ToDO: ioc_details = self._list_ioc_details(observable)
 
-        return self.map(assets)
+        return self.map(observable, assets)
 
     @classmethod
     @abstractmethod
@@ -65,13 +65,22 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns an artifact filter to query Chronicle."""
 
-    def map(self, data):
+    def map(self, observable, data):
         """Maps a Chronicle response to CTIM."""
 
-        assets = data.get('assets', [])
-        sightings = []
-
         def sighting(asset, artifact):
+
+            initial_artifact_observables = self._get_observables(artifact['artifactIndicator'])
+            artifact_observables = []
+            for ob in initial_artifact_observables:
+                if self.type() in ('ip', 'ipv6') and ob != observable:
+                    resolved_domains.add(ob['value'])
+                else:
+                    artifact_observables.append(ob)
+
+            if not artifact_observables:
+                return
+
             return {
                 'id': f'transient:{uuid4()}',
                 'type': 'sighting',
@@ -82,9 +91,7 @@ class Mapping(metaclass=ABCMeta):
                 'source_uri': data['uri'][0],
                 'internal': True,
                 'title': 'Found in Chronicle',
-                'observables': self._get_observables(
-                    artifact['artifactIndicator']
-                ),
+                'observables': artifact_observables,
                 'observed_time': {
                     'start_time':
                         artifact['seenTime']
@@ -99,11 +106,46 @@ class Mapping(metaclass=ABCMeta):
 
             }
 
+        def resolved_to(domain, ip):
+            return {
+                "origin": "Chronicle Enrichment Module",
+                "relation": "Resolved_To",
+                "source": {
+                    "value": domain,
+                    "type": "domain"
+                },
+                "related": {
+                    "value": ip,
+                    "type": "ip"
+                }
+            }
+
+        assets = data.get('assets', [])
+        sightings = []
+        resolved_domains = set()
+
         for asset in assets:
-            sightings.append(sighting(asset['asset'],
-                                      asset['firstSeenArtifactInfo']))
-            sightings.append(sighting(asset['asset'],
-                                      asset['lastSeenArtifactInfo']))
+            s1 = sighting(asset['asset'],
+                          asset['firstSeenArtifactInfo'])
+            s2 = sighting(asset['asset'],
+                          asset['lastSeenArtifactInfo'])
+
+            if s1:
+                sightings.append(s1)
+            if s2:
+                sightings.append(s2)
+
+
+        a = 10
+
+        domain_relationships = [
+            resolved_to(domain, observable)
+            for domain in resolved_domains
+        ]
+
+        if domain_relationships:
+            for s in sightings:
+                s['relations'] = domain_relationships
 
         return sightings
 
