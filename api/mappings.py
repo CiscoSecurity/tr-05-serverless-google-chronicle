@@ -3,7 +3,10 @@ from abc import ABCMeta, abstractmethod
 from http import HTTPStatus
 from uuid import uuid4
 
-from api.errors import UnexpectedChronicleResponseError
+from api.errors import (
+    UnexpectedChronicleResponseError,
+    UnknownObservableTypeError
+)
 from api.utils import join_url, TimeFilter
 
 
@@ -79,20 +82,18 @@ class Mapping(metaclass=ABCMeta):
                 'source_uri': data['uri'][0],
                 'internal': True,
                 'title': 'Found in Chronicle',
-                'observables': [
-                    self.artifact_to_observable(
-                        artifact['artifactIndicator'])
-                ],
+                'observables': self._get_observables(
+                    artifact['artifactIndicator']
+                ),
                 'observed_time': {
                     'start_time':
                         artifact['seenTime']
                 },
-
-                "targets": [
+                'targets': [
                     {
-                        "type": "endpoint",
-                        "observables": self.asset_to_observables(asset),
-                        "observed_time": {'start_time': artifact['seenTime']}
+                        'type': 'endpoint',
+                        'observables': self._get_observables(asset),
+                        'observed_time': {'start_time': artifact['seenTime']}
                     }
                 ]
 
@@ -107,22 +108,38 @@ class Mapping(metaclass=ABCMeta):
         return sightings
 
     @staticmethod
-    def asset_to_observables(asset):
-        type_map = {
-            'hostname': 'hostname',
-            'assetIpAddress': 'ip'
-            # ToDO: "???": 'mac_address',
-        }
+    def _get_observables(info):
+        """Retrieves CTR observables list
+        from Chronicle Asset or Artifact Indicator."""
 
-        # ToDo: differ ip and ipv6
-        return [{"value": v,
-                 "type": type_map.get(k, k)} for k, v in asset.items()]
+        def ctr_type(chronicle_type):
+            # ToDo: confirm assetMacAddress, destinationIpAddress,
+            #  hashMd5, hashSha1 hashSha256
+            type_map = {
+                # assets types
+                'hostname': 'hostname',
+                'assetIpAddress': 'ip',
+                'assetMacAddress': 'mac_address',
+                # artifacts types
+                'domainName': 'domain',
+                'destinationIpAddress': 'ip',
+                'hashMd5': 'md5',
+                'hashSha1': 'sha1',
+                'hashSha256': 'sha256',
+            }
 
-    def artifact_to_observable(self, artifact_indicator):
-        # ToDo: find better solution???
-        values = list(artifact_indicator.values())
-        return {'type': self.type(),
-                'value': values[0]}
+            ctr_type_ = type_map.get(chronicle_type)
+
+            if ctr_type_ is None:
+                raise UnknownObservableTypeError(chronicle_type)
+
+            if ctr_type_ == 'ip' and len(ctr_type_) > 15:
+                return 'ipv6'
+
+            return ctr_type_
+
+        return [{"value": value,
+                 "type": ctr_type(type_)} for type_, value in info.items()]
 
 
 class Domain(Mapping):

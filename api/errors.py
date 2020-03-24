@@ -52,3 +52,8 @@ class InvalidArgumentError(TRFormattedError):
             INVALID_ARGUMENT,
             str(error)
         )
+
+
+class UnknownObservableTypeError(InvalidArgumentError):
+    def __init__(self, type_):
+        super().__init__(f'Unknown observable type: {type_}')

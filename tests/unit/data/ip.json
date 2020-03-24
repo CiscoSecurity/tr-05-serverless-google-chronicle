@@ -30,7 +30,7 @@
       "internal": true,
       "observables": [
         {
-          "type": "ip",
+          "type": "domain",
           "value": "snapchat.com"
         }
       ],
@@ -63,7 +63,8 @@
       "internal": true,
       "observables": [
         {
-          "type": "ip",
+          "type": "domain",
+
           "value": "snapchat.com"
         }
       ],
