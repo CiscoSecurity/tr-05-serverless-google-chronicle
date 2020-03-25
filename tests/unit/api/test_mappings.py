@@ -104,7 +104,7 @@ def test_ipv6_map(client):
 def assert_maps_correctly(mapping, path):
     with open('tests/unit/data/' + path) as file:
         data = json.load(file)
-        output = mapping.map(data['input'])
+        output = mapping.map(data['observable'], data['input'])
         for sighting in output:
             assert sighting.pop('id').startswith('transient:')
         assert output == data['output']

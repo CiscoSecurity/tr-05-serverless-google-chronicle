@@ -1,4 +1,5 @@
 {
+  "observable": {"type":  "domain", "value": "cisco.com"},
   "input": {
     "assets": [
       {

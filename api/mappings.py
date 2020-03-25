@@ -135,12 +135,9 @@ class Mapping(metaclass=ABCMeta):
             if s2:
                 sightings.append(s2)
 
-
-        a = 10
-
         domain_relationships = [
-            resolved_to(domain, observable)
-            for domain in resolved_domains
+            resolved_to(domain, observable['value'])
+            for domain in sorted(resolved_domains) or resolved_domains
         ]
 
         if domain_relationships:
