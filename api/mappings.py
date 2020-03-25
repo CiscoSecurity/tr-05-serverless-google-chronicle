@@ -15,6 +15,7 @@ class Mapping(metaclass=ABCMeta):
     def __init__(self, base_url, client):
         self.client = client
         self.base_url = base_url
+        self.observable = None
 
     @classmethod
     def of(cls, type_, base_url, client):
@@ -65,22 +66,19 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns an artifact filter to query Chronicle."""
 
+    def add_observable_relationships(self, sightings):
+        return sightings
+
     def map(self, observable, data):
         """Maps a Chronicle response to CTIM."""
 
+        self.observable = observable
+        assets = data.get('assets', [])
+        sightings = []
+
         def sighting(asset, artifact):
-
-            initial_artifact_observables = self._get_observables(artifact['artifactIndicator'])
-            artifact_observables = []
-            for ob in initial_artifact_observables:
-                if self.type() in ('ip', 'ipv6') and ob != observable:
-                    resolved_domains.add(ob['value'])
-                else:
-                    artifact_observables.append(ob)
-
-            if not artifact_observables:
-                return
-
+            artifact_observables = self.artifact_observables(
+                artifact['artifactIndicator'])
             return {
                 'id': f'transient:{uuid4()}',
                 'type': 'sighting',
@@ -104,47 +102,20 @@ class Mapping(metaclass=ABCMeta):
                     }
                 ]
 
-            }
-
-        def resolved_to(domain, ip):
-            return {
-                "origin": "Chronicle Enrichment Module",
-                "relation": "Resolved_To",
-                "source": {
-                    "value": domain,
-                    "type": "domain"
-                },
-                "related": {
-                    "value": ip,
-                    "type": "ip"
-                }
-            }
-
-        assets = data.get('assets', [])
-        sightings = []
-        resolved_domains = set()
+            } if artifact_observables else None
 
         for asset in assets:
-            s1 = sighting(asset['asset'],
-                          asset['firstSeenArtifactInfo'])
-            s2 = sighting(asset['asset'],
-                          asset['lastSeenArtifactInfo'])
+            sightings.append(sighting(asset['asset'],
+                                      asset['firstSeenArtifactInfo']))
+            sightings.append(sighting(asset['asset'],
+                                      asset['lastSeenArtifactInfo']))
 
-            if s1:
-                sightings.append(s1)
-            if s2:
-                sightings.append(s2)
+        sightings = [s for s in sightings if s is not None]
 
-        domain_relationships = [
-            resolved_to(domain, observable['value'])
-            for domain in sorted(resolved_domains) or resolved_domains
-        ]
+        return self.add_observable_relationships(sightings)
 
-        if domain_relationships:
-            for s in sightings:
-                s['relations'] = domain_relationships
-
-        return sightings
+    def artifact_observables(self, artifact):
+        return self._get_observables(artifact)
 
     @staticmethod
     def _get_observables(info):
@@ -193,6 +164,10 @@ class Domain(Mapping):
 
 class IP(Mapping):
 
+    def __init__(self, base_url, client):
+        super().__init__(base_url, client)
+        self.resolved_domains = set()
+
     @classmethod
     def type(cls):
         return 'ip'
@@ -200,15 +175,45 @@ class IP(Mapping):
     def filter(self, observable):
         return f'artifact.destination_ip_address={observable}'
 
+    def artifact_observables(self, info):
+        ips = []
+        for ob in super()._get_observables(info):
+            if ob != self.observable:
+                self.resolved_domains.add(ob['value'])
+            else:
+                ips.append(ob)
 
-class IPV6(IP):
+        return ips
 
-    @classmethod
-    def type(cls):
-        return 'ipv6'
+    def add_observable_relationships(self, sightings):
+        if not sightings:
+            return sightings
 
-    def filter(self, observable):
-        return f'artifact.destination_ip_address={observable}'
+        domain_relationships = [
+            self.resolved_to(domain, self.observable['value'])
+            for domain in sorted(self.resolved_domains) or self.resolved_domains
+        ]
+
+        if domain_relationships:
+            for s in sightings:
+                s['relations'] = domain_relationships
+
+        return sightings
+
+    @staticmethod
+    def resolved_to(domain, ip):
+        return {
+            "origin": "Chronicle Enrichment Module",
+            "relation": "Resolved_To",
+            "source": {
+                "value": domain,
+                "type": "domain"
+            },
+            "related": {
+                "value": ip,
+                "type": "ip"
+            }
+        }
 
 
 class MD5(Mapping):
