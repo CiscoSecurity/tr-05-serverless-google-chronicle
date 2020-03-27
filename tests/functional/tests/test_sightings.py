@@ -36,8 +36,7 @@ def test_positive_sighting_ip(module_headers):
         assert sighting['source'] == 'Chronicle'
         assert sighting['title'] == 'Found in Chronicle'
         # Create Bug - https://jira.softserveinc.com/browse/CCTRI-905
-        assert (sighting['observables'] ==
-                [{'value': 'dellsupportcenter.com', 'type': 'domain'}])
+        assert sighting['observables'] == [observable]
 
         for target in sighting['targets']:
             assert target['type'] == 'endpoint'
