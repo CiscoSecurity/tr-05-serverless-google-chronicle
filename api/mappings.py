@@ -4,7 +4,7 @@ from http import HTTPStatus
 from uuid import uuid4
 
 from api.errors import UnexpectedChronicleResponseError
-from api.utils import join_url, TimeFilter
+from api.utils import join_url, TimeFilter, all_subclasses
 
 
 class Mapping(metaclass=ABCMeta):
@@ -18,7 +18,7 @@ class Mapping(metaclass=ABCMeta):
     def of(cls, type_, base_url, client):
         """Returns an instance of `Mapping` for the specified type."""
 
-        for subcls in Mapping.__subclasses__():
+        for subcls in all_subclasses(Mapping):
             if subcls.type() == type_:
                 return subcls(base_url, client)
 
@@ -113,7 +113,7 @@ class Mapping(metaclass=ABCMeta):
         """Retrieves CTR observables list
         from Chronicle {'type': 'value'} structures."""
 
-        def ctr_type(chronicle_type):
+        def ctr_type(chronicle_type, value):
             # ToDo: confirm assetMacAddress, destinationIpAddress,
             #  hashMd5, hashSha1 hashSha256
             type_map = {
@@ -131,22 +131,21 @@ class Mapping(metaclass=ABCMeta):
 
             mapped_type = type_map.get(chronicle_type)
 
-            if mapped_type and mapped_type == 'ip' and len(mapped_type) > 15:
+            if mapped_type and mapped_type == 'ip' and len(value) > 15:
                 return 'ipv6'
 
             return mapped_type
 
         observables = []
         for type_, value in info.items():
-            type_ = ctr_type(type_)
+            type_ = ctr_type(type_, value)
             if type_:
                 observables.append({"value": value, "type": type_})
 
         return observables
 
     def artifact_observables(self, artifact):
-        """Retrieves CTR observables list
-                from Chronicle Artifact."""
+        """Retrieves CTR observables list from Chronicle Artifact."""
         return self.get_observables(artifact['artifactIndicator'])
 
 
@@ -174,11 +173,13 @@ class IP(Mapping):
         return f'artifact.destination_ip_address={observable}'
 
     def artifact_observables(self, artifact):
+        """ Chronicle returns assets for resolved domains in
+            response for ips, so we need to separate it. """
         ips = []
         initial_observables = super().artifact_observables(artifact)
 
         for ob in initial_observables:
-            if ob['type'] in ('ip', 'ipv6'):
+            if ob['type'] == self.type():
                 ips.append(ob)
             elif ob['type'] == 'domain':
                 self.resolved_domains.add(ob['value'])
@@ -216,6 +217,13 @@ class IP(Mapping):
                 sighting['relations'] = relationships
 
         return sightings
+
+
+class IPV6(IP):
+
+    @classmethod
+    def type(cls):
+        return 'ipv6'
 
 
 class MD5(Mapping):
