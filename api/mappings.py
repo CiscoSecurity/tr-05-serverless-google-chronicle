@@ -3,10 +3,7 @@ from abc import ABCMeta, abstractmethod
 from http import HTTPStatus
 from uuid import uuid4
 
-from api.errors import (
-    UnexpectedChronicleResponseError,
-    UnknownObservableTypeError
-)
+from api.errors import UnexpectedChronicleResponseError
 from api.utils import join_url, TimeFilter
 
 
@@ -52,10 +49,11 @@ class Mapping(metaclass=ABCMeta):
 
     def get(self, observable):
         """Retrieves and maps Chronicle Assets and IoC details to CTIM."""
+        self.observable = observable
         assets = self._list_assets(observable)
         # ToDO: ioc_details = self._list_ioc_details(observable)
 
-        return self.map(observable, assets)
+        return self.map(assets)
 
     @classmethod
     @abstractmethod
@@ -66,43 +64,41 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns an artifact filter to query Chronicle."""
 
-    def add_observable_relationships(self, sightings):
-        return sightings
-
-    def map(self, observable, data):
+    def map(self, data):
         """Maps a Chronicle response to CTIM."""
-
-        self.observable = observable
         assets = data.get('assets', [])
         sightings = []
 
         def sighting(asset, artifact):
-            artifact_observables = self.artifact_observables(
-                artifact['artifactIndicator'])
-            return {
-                'id': f'transient:{uuid4()}',
-                'type': 'sighting',
-                'schema_version': '1.0.16',
-                'confidence': 'High',
-                'count': len(assets),
-                'source': 'Chronicle',
-                'source_uri': data['uri'][0],
-                'internal': True,
-                'title': 'Found in Chronicle',
-                'observables': artifact_observables,
-                'observed_time': {
-                    'start_time':
-                        artifact['seenTime']
-                },
-                'targets': [
+            artifact_observables = self.artifact_observables(artifact)
+            if artifact_observables:
+                result = {
+                    'id': f'transient:{uuid4()}',
+                    'type': 'sighting',
+                    'schema_version': '1.0.16',
+                    'confidence': 'High',
+                    'count': len(assets),
+                    'source': 'Chronicle',
+                    'source_uri': data['uri'][0],
+                    'internal': True,
+                    'title': 'Found in Chronicle',
+                    'observables': artifact_observables,
+                    'observed_time': {'start_time': artifact['seenTime']},
+                }
+            else:
+                return None
+
+            asset_observables = self.get_observables(asset)
+            if asset_observables:
+                result['targets'] = [
                     {
                         'type': 'endpoint',
-                        'observables': self._get_observables(asset),
+                        'observables': asset_observables,
                         'observed_time': {'start_time': artifact['seenTime']}
                     }
                 ]
 
-            } if artifact_observables else None
+            return result
 
         for asset in assets:
             sightings.append(sighting(asset['asset'],
@@ -110,17 +106,12 @@ class Mapping(metaclass=ABCMeta):
             sightings.append(sighting(asset['asset'],
                                       asset['lastSeenArtifactInfo']))
 
-        sightings = [s for s in sightings if s is not None]
-
-        return self.add_observable_relationships(sightings)
-
-    def artifact_observables(self, artifact):
-        return self._get_observables(artifact)
+        return [s for s in sightings if s is not None]
 
     @staticmethod
-    def _get_observables(info):
+    def get_observables(info):
         """Retrieves CTR observables list
-        from Chronicle Asset or Artifact Indicator."""
+        from Chronicle {'type': 'value'} structures."""
 
         def ctr_type(chronicle_type):
             # ToDo: confirm assetMacAddress, destinationIpAddress,
@@ -138,18 +129,25 @@ class Mapping(metaclass=ABCMeta):
                 'hashSha256': 'sha256',
             }
 
-            ctr_type_ = type_map.get(chronicle_type)
+            mapped_type = type_map.get(chronicle_type)
 
-            if ctr_type_ is None:
-                raise UnknownObservableTypeError(chronicle_type)
-
-            if ctr_type_ == 'ip' and len(ctr_type_) > 15:
+            if mapped_type and mapped_type == 'ip' and len(mapped_type) > 15:
                 return 'ipv6'
 
-            return ctr_type_
+            return mapped_type
 
-        return [{"value": value,
-                 "type": ctr_type(type_)} for type_, value in info.items()]
+        observables = []
+        for type_, value in info.items():
+            type_ = ctr_type(type_)
+            if type_:
+                observables.append({"value": value, "type": type_})
+
+        return observables
+
+    def artifact_observables(self, artifact):
+        """Retrieves CTR observables list
+                from Chronicle Artifact."""
+        return self.get_observables(artifact['artifactIndicator'])
 
 
 class Domain(Mapping):
@@ -175,45 +173,49 @@ class IP(Mapping):
     def filter(self, observable):
         return f'artifact.destination_ip_address={observable}'
 
-    def artifact_observables(self, info):
+    def artifact_observables(self, artifact):
         ips = []
-        for ob in super()._get_observables(info):
-            if ob != self.observable:
-                self.resolved_domains.add(ob['value'])
-            else:
+        initial_observables = super().artifact_observables(artifact)
+
+        for ob in initial_observables:
+            if ob['type'] in ('ip', 'ipv6'):
                 ips.append(ob)
+            elif ob['type'] == 'domain':
+                self.resolved_domains.add(ob['value'])
 
         return ips
 
-    def add_observable_relationships(self, sightings):
-        if not sightings:
-            return sightings
+    def resolved_domains_relationships(self):
+        self.resolved_domains = sorted(self.resolved_domains)
 
-        domain_relationships = [
-            self.resolved_to(domain, self.observable['value'])
-            for domain in sorted(self.resolved_domains) or self.resolved_domains
+        def resolved_to(domain, ip_observable):
+            return {
+                "origin": "Chronicle Enrichment Module",
+                "relation": "Resolved_To",
+                "source": {
+                    "value": domain,
+                    "type": "domain"
+                },
+                "related": {
+                    "value": ip_observable['value'],
+                    "type": ip_observable['type']
+                }
+            }
+
+        return [
+            resolved_to(domain, self.observable)
+            for domain in self.resolved_domains
         ]
 
-        if domain_relationships:
-            for s in sightings:
-                s['relations'] = domain_relationships
+    def map(self, assets):
+        sightings = super().map(assets)
+        relationships = self.resolved_domains_relationships()
+
+        if sightings and relationships:
+            for sighting in sightings:
+                sighting['relations'] = relationships
 
         return sightings
-
-    @staticmethod
-    def resolved_to(domain, ip):
-        return {
-            "origin": "Chronicle Enrichment Module",
-            "relation": "Resolved_To",
-            "source": {
-                "value": domain,
-                "type": "domain"
-            },
-            "related": {
-                "value": ip,
-                "type": "ip"
-            }
-        }
 
 
 class MD5(Mapping):
