@@ -98,3 +98,11 @@ class TimeFilter:
     def __str__(self):
         return (f'&start_time={self.format_time_to_arg(self.start)}'
                 f'&end_time={self.format_time_to_arg(self.end)}')
+
+
+def all_subclasses(cls):
+    """
+        Retrieves set of class subclasses recursively.
+    """
+    subclasses = set(cls.__subclasses__())
+    return subclasses.union(s for c in subclasses for s in all_subclasses(c))

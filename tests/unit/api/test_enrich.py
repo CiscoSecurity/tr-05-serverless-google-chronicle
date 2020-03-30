@@ -88,3 +88,12 @@ def test_enrich_call_success(
 
         assert response.status_code == HTTPStatus.OK
         assert response.json.get('errors') is None
+
+        data = response.get_json()
+        if type(data["data"]) == dict and data["data"].get("sightings"):
+            assert data["data"]["sightings"]["docs"][0]["confidence"]
+            assert data["data"]["sightings"]["docs"][0]["id"]
+            assert data["data"]["sightings"]["docs"][0]["count"]
+            assert data["data"]["sightings"]["docs"][0]["observed_time"]
+            assert data["data"]["sightings"]["docs"][0]["schema_version"]
+            assert data["data"]["sightings"]["docs"][0]["type"]
