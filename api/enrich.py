@@ -28,12 +28,11 @@ def observe_observables():
 
     def _observe(observable):
         type_ = observable['type']
-        value = observable['value']
 
         mapping = Mapping.of(type_, current_app.config['API_URL'],
                              http_client)
 
-        return mapping.get(value) if mapping is not None else ([], [], [])
+        return mapping.get(observable) if mapping is not None else []
 
     sightings = []
     indicators = []

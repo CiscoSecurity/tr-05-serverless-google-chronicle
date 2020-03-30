@@ -13,6 +13,7 @@ MEDIUM = 'Medium'
 HIGH = 'High'
 UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
+from api.utils import join_url, TimeFilter, all_subclasses
 
 
 class Mapping(metaclass=ABCMeta):
@@ -35,7 +36,8 @@ class Mapping(metaclass=ABCMeta):
     def _request_chronicle(self, path, observable, time_filter=None):
         url = join_url(
             self.base_url,
-            f'{path}?{self.filter(observable)}{str(time_filter or "")}'
+            f'{path}?{self.filter(observable["value"])}'
+            f'{str(time_filter or "")}'
         )
 
         response, body = self.client.request(
@@ -74,7 +76,6 @@ class Mapping(metaclass=ABCMeta):
 
     def map(self, assets_data, ioc_details):
         """Maps a Chronicle response to CTIM."""
-
         assets = assets_data.get('assets', [])
 
         def sighting(asset, artifact):
