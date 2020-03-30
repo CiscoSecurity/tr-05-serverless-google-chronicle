@@ -105,7 +105,7 @@ def assert_maps_correctly(mapping, path):
     with open('tests/unit/data/' + path) as file:
         data = json.load(file)
         mapping.observable = data['observable']
-        output = mapping.map(data['input'])
-        for sighting in output:
+        sightings, indicators, relationships  = mapping.map(data['input'], {})
+        for sighting in sightings:
             assert sighting.pop('id').startswith('transient:')
-        assert output == data['output']
+        assert sightings == data['output']  # ToDo

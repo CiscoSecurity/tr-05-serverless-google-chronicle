@@ -87,7 +87,7 @@ class Mapping(metaclass=ABCMeta):
                     'confidence': 'High',
                     'count': len(assets),
                     'source': 'Chronicle',
-                    'source_uri': data['uri'][0],
+                    'source_uri': assets_data['uri'][0],
                     'internal': True,
                     'title': 'Found in Chronicle',
                     'observables': artifact_observables,
@@ -149,6 +149,8 @@ class Mapping(metaclass=ABCMeta):
                                       asset['firstSeenArtifactInfo']))
             sightings.append(sighting(asset['asset'],
                                       asset['lastSeenArtifactInfo']))
+
+        sightings = [s for s in sightings if s is not None]
 
         for source in sources:
             i = indicator(source)
@@ -300,15 +302,15 @@ class IP(Mapping):
             for domain in self.resolved_domains
         ]
 
-    def map(self, assets):
-        sightings = super().map(assets)
+    def map(self, assets_data, ioc_details):
+        sightings, indicators, relationships = super().map(assets_data, ioc_details)
         relationships = self.resolved_domains_relationships()
 
         if sightings and relationships:
             for sighting in sightings:
                 sighting['relations'] = relationships
 
-        return sightings
+        return sightings, indicators, relationships
 
 
 class IPV6(IP):
