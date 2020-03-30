@@ -27,7 +27,8 @@ class Mapping(metaclass=ABCMeta):
     def _request_chronicle(self, path, observable, time_filter=None):
         url = join_url(
             self.base_url,
-            f'{path}?{self.filter(observable)}{str(time_filter or "")}'
+            f'{path}?{self.filter(observable["value"])}'
+            f'{str(time_filter or "")}'
         )
 
         response, body = self.client.request(
