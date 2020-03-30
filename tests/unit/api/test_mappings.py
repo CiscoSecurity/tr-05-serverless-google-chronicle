@@ -12,6 +12,7 @@ def test_mapping_of(client):
     assert isinstance(Mapping.of('sha256', base_url, client), SHA256)
     assert isinstance(Mapping.of('sha1', base_url, client), SHA1)
     assert isinstance(Mapping.of('ip', base_url, client), IP)
+    assert isinstance(Mapping.of('ipv6', base_url, client), IPV6)
     assert isinstance(Mapping.of('md5', base_url, client), MD5)
     assert Mapping.of('whatever', base_url, client) is None
 
@@ -97,13 +98,13 @@ def test_ipv6_filter(client):
 
 def test_ipv6_map(client):
     base_url = client.application.config['API_URL']
-    # ToDo: Add more data to file ipv6.json.
     assert_maps_correctly(IPV6(base_url, client), 'ipv6.json')
 
 
 def assert_maps_correctly(mapping, path):
     with open('tests/unit/data/' + path) as file:
         data = json.load(file)
+        mapping.observable = data['observable']
         output = mapping.map(data['input'])
         for sighting in output:
             assert sighting.pop('id').startswith('transient:')
