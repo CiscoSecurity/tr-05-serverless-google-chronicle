@@ -13,7 +13,6 @@ MEDIUM = 'Medium'
 HIGH = 'High'
 UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
-from api.utils import join_url, TimeFilter, all_subclasses
 
 
 class Mapping(metaclass=ABCMeta):
@@ -60,10 +59,19 @@ class Mapping(metaclass=ABCMeta):
     def get(self, observable):
         """Retrieves and maps Chronicle Assets and IoC details to CTIM."""
         self.observable = observable
-        assets = self._list_assets(observable)
+        assets_data = self._list_assets(observable)
         ioc_details = self._list_ioc_details(observable)
 
-        return self.map(assets, ioc_details)
+        assets = assets_data.get('assets', [])
+        uri = assets_data['uri'][0]
+        sources = ioc_details.get('sources', [])
+
+        sightings = self.extract_sightings(assets, uri)
+        indicators = self.extract_indicators(sources)
+        relationships = self.exrtract_relationships(sightings, indicators)
+
+        return sightings, indicators, relationships
+
 
     @classmethod
     @abstractmethod
@@ -74,9 +82,7 @@ class Mapping(metaclass=ABCMeta):
     def filter(self, observable):
         """Returns an artifact filter to query Chronicle."""
 
-    def map(self, assets_data, ioc_details):
-        """Maps a Chronicle response to CTIM."""
-        assets = assets_data.get('assets', [])
+    def extract_sightings(self, assets, uri):
 
         def sighting(asset, artifact):
             artifact_observables = self.artifact_observables(artifact)
@@ -88,7 +94,7 @@ class Mapping(metaclass=ABCMeta):
                     'confidence': 'High',
                     'count': len(assets),
                     'source': 'Chronicle',
-                    'source_uri': assets_data['uri'][0],
+                    'source_uri': uri,
                     'internal': True,
                     'title': 'Found in Chronicle',
                     'observables': artifact_observables,
@@ -109,6 +115,17 @@ class Mapping(metaclass=ABCMeta):
 
             return result
 
+        sightings = []
+
+        for asset in assets:
+            sightings.append(sighting(asset['asset'],
+                                      asset['firstSeenArtifactInfo']))
+            sightings.append(sighting(asset['asset'],
+                                      asset['lastSeenArtifactInfo']))
+
+        return [s for s in sightings if s is not None]
+
+    def extract_indicators(self, sources):
         def indicator(source):
             r = {
                 'id': f'transient:{uuid4()}',
@@ -132,6 +149,9 @@ class Mapping(metaclass=ABCMeta):
 
             return r
 
+        return [indicator(source) for source in sources]
+
+    def exrtract_relationships(self, sightings, indicators):
         def relationship(indicator, sighting):
             return {'type': 'relationship',
                     'relationship_type': 'sighting-of',
@@ -140,27 +160,8 @@ class Mapping(metaclass=ABCMeta):
                     'source_ref': sighting['id'],
                     'target_ref': indicator['id']}
 
-        sources = ioc_details.get('sources', [])
+        return [relationship(i, s) for i in indicators for s in sightings]
 
-        sightings = []
-        relationships = []
-        indicators = []
-        for asset in assets:
-            sightings.append(sighting(asset['asset'],
-                                      asset['firstSeenArtifactInfo']))
-            sightings.append(sighting(asset['asset'],
-                                      asset['lastSeenArtifactInfo']))
-
-        sightings = [s for s in sightings if s is not None]
-
-        for source in sources:
-            i = indicator(source)
-            indicators.append(i)
-
-            for s in sightings:
-                relationships.append(relationship(i, s))
-
-        return sightings, indicators, relationships
 
     @staticmethod
     def confidence(raw_confidence_score):
@@ -303,15 +304,15 @@ class IP(Mapping):
             for domain in self.resolved_domains
         ]
 
-    def map(self, assets_data, ioc_details):
-        sightings, indicators, relationships = super().map(assets_data, ioc_details)
+    def extract_sightings(self, assets_data, uri):
+        sightings = super().extract_sightings(assets_data, uri)
         relationships = self.resolved_domains_relationships()
 
         if sightings and relationships:
             for sighting in sightings:
                 sighting['relations'] = relationships
 
-        return sightings, indicators, relationships
+        return sightings
 
 
 class IPV6(IP):
