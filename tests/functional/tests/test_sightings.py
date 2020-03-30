@@ -24,24 +24,8 @@ def test_positive_sighting_ip(module_headers):
     )['data']
     sightings = get_observables(
         response, 'Chronicle Backstory')['data']['sightings']
-    assert sightings['count'] == 100
-
-    for sighting in sightings['docs']:
-        assert sighting['confidence'] == 'High'
-        assert sighting['count']
-        assert sighting['id']
-        assert 'start_time' in sighting['observed_time']
-        assert 'schema_version' in sighting
-        assert sighting['type'] == 'sighting'
-        assert sighting['source'] == 'Chronicle'
-        assert sighting['title'] == 'Found in Chronicle'
-        # Create Bug - https://jira.softserveinc.com/browse/CCTRI-905
-        assert sighting['observables'] == [observable]
-
-        for target in sighting['targets']:
-            assert target['type'] == 'endpoint'
-            assert target['observables'][0]['type'] == 'hostname'
-            assert 'start_time' in target['observed_time']
+    assert sightings['count'] == 0
+    assert sightings['docs'] == []
 
 
 def test_positive_sighting_domain(module_headers):
