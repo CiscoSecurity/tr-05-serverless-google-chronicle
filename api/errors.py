@@ -52,3 +52,10 @@ class InvalidArgumentError(TRFormattedError):
             INVALID_ARGUMENT,
             str(error)
         )
+
+
+class UnsupportedArtifactTypeError(InvalidArgumentError):
+    def __init__(self, type_):
+        super().__init__(
+            f"Unsupported artifact type error: {type_}"
+        )

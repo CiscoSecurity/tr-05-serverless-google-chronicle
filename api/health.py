@@ -2,13 +2,13 @@ from http import HTTPStatus
 
 from flask import Blueprint, current_app
 
+from api.client import TimeFilter
 from api.errors import UnexpectedChronicleResponseError
 from api.utils import (
     jsonify_data,
     get_chronicle_http_client,
     get_jwt,
-    join_url,
-    TimeFilter
+    join_url
 )
 
 health_api = Blueprint('health', __name__)

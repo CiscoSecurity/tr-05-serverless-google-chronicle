@@ -1,10 +1,7 @@
-import json
 from abc import ABCMeta, abstractmethod
-from http import HTTPStatus
 from uuid import uuid4
 
-from api.errors import UnexpectedChronicleResponseError
-from api.utils import join_url, TimeFilter, all_subclasses
+from api.utils import all_subclasses
 
 NONE = 'None'
 INFO = 'Info'
@@ -17,73 +14,25 @@ INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
 
 class Mapping(metaclass=ABCMeta):
 
-    def __init__(self, base_url, client):
-        self.client = client
-        self.base_url = base_url
-        self.observable = None
+    def __init__(self, observable):
+        self.observable = observable
 
     @classmethod
-    def of(cls, type_, base_url, client):
+    def for_(cls, observable):
         """Returns an instance of `Mapping` for the specified type."""
 
         for subcls in all_subclasses(Mapping):
-            if subcls.type() == type_:
-                return subcls(base_url, client)
+            if subcls.type() == observable['type']:
+                return subcls(observable)
 
         return None
-
-    def _request_chronicle(self, path, observable, time_filter=None):
-        url = join_url(
-            self.base_url,
-            f'{path}?{self.filter(observable["value"])}'
-            f'{str(time_filter or "")}'
-        )
-
-        response, body = self.client.request(
-            url, 'GET', headers={'Content-Type': 'application/json',
-                                 'Accept': 'application/json'}
-        )
-
-        if response.status != HTTPStatus.OK:
-            raise UnexpectedChronicleResponseError(body)
-
-        return json.loads(body)
-
-    def _list_assets(self, observable):
-        return self._request_chronicle('/artifact/listassets',
-                                       observable, TimeFilter())
-
-    def _list_ioc_details(self, observable):
-        return self._request_chronicle('artifact/listiocdetails', observable)
-
-    def get(self, observable):
-        """Retrieves and maps Chronicle Assets and IoC details to CTIM."""
-        self.observable = observable
-        assets_data = self._list_assets(observable)
-        ioc_details = self._list_ioc_details(observable)
-
-        assets = assets_data.get('assets', [])
-        uri = assets_data['uri'][0]
-        sources = ioc_details.get('sources', [])
-
-        sightings = self.extract_sightings(assets, uri)
-        indicators = self.extract_indicators(sources)
-        relationships = self.exrtract_relationships(sightings, indicators)
-
-        return sightings, indicators, relationships
-
 
     @classmethod
     @abstractmethod
     def type(cls):
         """Returns the observable type that the mapping is able to process."""
 
-    @abstractmethod
-    def filter(self, observable):
-        """Returns an artifact filter to query Chronicle."""
-
-    def extract_sightings(self, assets, uri):
-
+    def extract_sightings(self, assets_data):
         def sighting(asset, artifact):
             artifact_observables = self.artifact_observables(artifact)
             if artifact_observables:
@@ -115,6 +64,8 @@ class Mapping(metaclass=ABCMeta):
 
             return result
 
+        assets = assets_data.get('assets', [])
+        uri = assets_data['uri'][0]
         sightings = []
 
         for asset in assets:
@@ -125,14 +76,54 @@ class Mapping(metaclass=ABCMeta):
 
         return [s for s in sightings if s is not None]
 
-    def extract_indicators(self, sources):
+    @staticmethod
+    def get_observables(info):
+        """Retrieves CTR observables list
+        from Chronicle {'type': 'value'} structures."""
+
+        def ctr_type(chronicle_type, value):
+            # ToDo: confirm assetMacAddress, destinationIpAddress,
+            #  hashMd5, hashSha1 hashSha256
+            type_map = {
+                # assets types
+                'hostname': 'hostname',
+                'assetIpAddress': 'ip',
+                'assetMacAddress': 'mac_address',
+                # artifacts types
+                'domainName': 'domain',
+                'destinationIpAddress': 'ip',
+                'hashMd5': 'md5',
+                'hashSha1': 'sha1',
+                'hashSha256': 'sha256',
+            }
+
+            mapped_type = type_map.get(chronicle_type)
+
+            if mapped_type and mapped_type == 'ip' and len(value) > 15:
+                return 'ipv6'
+
+            return mapped_type
+
+        observables = []
+        for type_, value in info.items():
+            type_ = ctr_type(type_, value)
+            if type_:
+                observables.append({"value": value, "type": type_})
+
+        return observables
+
+    def artifact_observables(self, artifact):
+        """Retrieves CTR observables list from Chronicle Artifact."""
+        return self.get_observables(artifact['artifactIndicator'])
+
+    def extract_indicators(self, ioc_details):
         def indicator(source):
             r = {
                 'id': f'transient:{uuid4()}',
                 'type': 'indicator',
                 'schema_version': '1.0.16',
                 'producer': 'Chronicle',
-                'valid_time': [],
+                'valid_time': {},  # ToDo: Passing the empty array [ ] should auto populate the end_time and start_time values, but it returns ERROR
                 'confidence': self.confidence(
                     source.get('confidenceScore', {}).get(
                         'strRawConfidenceScore')),
@@ -149,9 +140,11 @@ class Mapping(metaclass=ABCMeta):
 
             return r
 
+        sources = ioc_details.get('sources', [])
         return [indicator(source) for source in sources]
 
-    def exrtract_relationships(self, sightings, indicators):
+    @staticmethod
+    def create_relationships(sightings, indicators):
         def relationship(indicator, sighting):
             return {'type': 'relationship',
                     'relationship_type': 'sighting-of',
@@ -161,7 +154,6 @@ class Mapping(metaclass=ABCMeta):
                     'target_ref': indicator['id']}
 
         return [relationship(i, s) for i in indicators for s in sightings]
-
 
     @staticmethod
     def confidence(raw_confidence_score):
@@ -204,46 +196,6 @@ class Mapping(metaclass=ABCMeta):
 
         return UNKNOWN
 
-    @staticmethod
-    def get_observables(info):
-        """Retrieves CTR observables list
-        from Chronicle {'type': 'value'} structures."""
-
-        def ctr_type(chronicle_type, value):
-            # ToDo: confirm assetMacAddress, destinationIpAddress,
-            #  hashMd5, hashSha1 hashSha256
-            type_map = {
-                # assets types
-                'hostname': 'hostname',
-                'assetIpAddress': 'ip',
-                'assetMacAddress': 'mac_address',
-                # artifacts types
-                'domainName': 'domain',
-                'destinationIpAddress': 'ip',
-                'hashMd5': 'md5',
-                'hashSha1': 'sha1',
-                'hashSha256': 'sha256',
-            }
-
-            mapped_type = type_map.get(chronicle_type)
-
-            if mapped_type and mapped_type == 'ip' and len(value) > 15:
-                return 'ipv6'
-
-            return mapped_type
-
-        observables = []
-        for type_, value in info.items():
-            type_ = ctr_type(type_, value)
-            if type_:
-                observables.append({"value": value, "type": type_})
-
-        return observables
-
-    def artifact_observables(self, artifact):
-        """Retrieves CTR observables list from Chronicle Artifact."""
-        return self.get_observables(artifact['artifactIndicator'])
-
 
 class Domain(Mapping):
 
@@ -251,22 +203,16 @@ class Domain(Mapping):
     def type(cls):
         return 'domain'
 
-    def filter(self, observable):
-        return f'artifact.domain_name={observable}'
-
 
 class IP(Mapping):
 
-    def __init__(self, base_url, client):
-        super().__init__(base_url, client)
+    def __init__(self, observable):
+        super().__init__(observable)
         self.resolved_domains = set()
 
     @classmethod
     def type(cls):
         return 'ip'
-
-    def filter(self, observable):
-        return f'artifact.destination_ip_address={observable}'
 
     def artifact_observables(self, artifact):
         """ Chronicle returns assets for resolved domains in
@@ -304,8 +250,8 @@ class IP(Mapping):
             for domain in self.resolved_domains
         ]
 
-    def extract_sightings(self, assets_data, uri):
-        sightings = super().extract_sightings(assets_data, uri)
+    def extract_sightings(self, assets_data):
+        sightings = super().extract_sightings(assets_data)
         relationships = self.resolved_domains_relationships()
 
         if sightings and relationships:
@@ -328,9 +274,6 @@ class MD5(Mapping):
     def type(cls):
         return 'md5'
 
-    def filter(self, observable):
-        return f'artifact.hash_md5={observable}'
-
 
 class SHA1(Mapping):
 
@@ -338,15 +281,9 @@ class SHA1(Mapping):
     def type(cls):
         return 'sha1'
 
-    def filter(self, observable):
-        return f'artifact.hash_sha1={observable}'
-
 
 class SHA256(Mapping):
 
     @classmethod
     def type(cls):
         return 'sha256'
-
-    def filter(self, observable):
-        return f'artifact.hash_sha256={observable}'
