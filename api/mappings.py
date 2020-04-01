@@ -12,6 +12,11 @@ UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
 
 
+CTIM_DEFAULTS = {
+    'schema_version': '1.0.16',
+}
+
+
 class Mapping(metaclass=ABCMeta):
 
     def __init__(self, observable):
@@ -37,15 +42,15 @@ class Mapping(metaclass=ABCMeta):
             artifact_observables = self.artifact_observables(artifact)
             if artifact_observables:
                 result = {
+                    **CTIM_DEFAULTS,
                     'id': f'transient:{uuid4()}',
                     'type': 'sighting',
-                    'schema_version': '1.0.16',
-                    'confidence': 'High',
-                    'count': len(assets),
                     'source': 'Chronicle',
-                    'source_uri': uri,
-                    'internal': True,
                     'title': 'Found in Chronicle',
+                    'confidence': HIGH,
+                    'internal': True,
+                    'count': len(assets),
+                    'source_uri': uri,
                     'observables': artifact_observables,
                     'observed_time': {'start_time': artifact['seenTime']},
                 }
@@ -119,11 +124,11 @@ class Mapping(metaclass=ABCMeta):
     def extract_indicators(self, ioc_details):
         def indicator(source):
             r = {
+                **CTIM_DEFAULTS,
                 'id': f'transient:{uuid4()}',
                 'type': 'indicator',
-                'schema_version': '1.0.16',
                 'producer': 'Chronicle',
-                'valid_time': {},  # ToDo: Passing the empty array [ ] should auto populate the end_time and start_time values, but it returns ERROR
+                'valid_time': {},
                 'confidence': self.confidence(
                     source.get('confidenceScore', {}).get(
                         'strRawConfidenceScore')),
@@ -143,26 +148,24 @@ class Mapping(metaclass=ABCMeta):
         sources = ioc_details.get('sources', [])
         return [indicator(source) for source in sources]
 
-    @staticmethod
-    def create_relationships(sightings, indicators):
-        def relationship(indicator, sighting):
-            return {'type': 'relationship',
-                    'relationship_type': 'sighting-of',
-                    'schema_version': '1.0.16',
-                    'id': f'transient:{uuid4()}',
-                    'source_ref': sighting['id'],
-                    'target_ref': indicator['id']}
+    def create_relationships(self, sightings, indicators):
+        def sighting_of(sighting, indicator):
+            return {
+                **CTIM_DEFAULTS,
+                'id': f'transient:{uuid4()}',
+                'type': 'relationship',
+                'relationship_type': 'sighting-of',
+                'source_ref': sighting['id'],
+                'target_ref': indicator['id']}
 
-        return [relationship(i, s) for i in indicators for s in sightings]
+        return [sighting_of(s, i) for i in indicators for s in sightings]
 
     @staticmethod
     def confidence(raw_confidence_score):
-        # ToDo: This field may be a string "High", "Low", etc
-        #  or it may be a number as a string between 0 and 127 "71", "124".
-        #  Will need some logic to map those values to the required
-        #  High, Medium, Low for now just split them evenly
+        # raw_confidence_score possible values: 'Low', 'Medium', 'High', ''
+        # or a number as a string between 0 and 127
 
-        if raw_confidence_score is None:
+        if raw_confidence_score in (None, ''):
             return NONE
 
         if raw_confidence_score in INDICATOR_SCORES:
@@ -185,10 +188,8 @@ class Mapping(metaclass=ABCMeta):
 
     @staticmethod
     def severity(raw_severity):
-        # ToDo: Finding out what the possible values are have only seen "High".
-        #  The value is not always present in the response
-        #  Got "Info"
-        if raw_severity is None:
+        # raw_severity possible values: 'n/a', 'Low', 'Medium', 'High', 'Info'
+        if raw_severity in (None, 'n/a'):
             return NONE
 
         if raw_severity in INDICATOR_SCORES:
