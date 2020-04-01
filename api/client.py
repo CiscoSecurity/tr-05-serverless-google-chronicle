@@ -54,6 +54,9 @@ class ChronicleClient:
                                        observable, TimeFilter())
 
     def list_ioc_details(self, observable):
+        allowed_types = ('domain', 'ip', 'ipv6')
+        if observable['type'] not in allowed_types:
+            return {}
         return self._request_chronicle('artifact/listiocdetails', observable)
 
 
