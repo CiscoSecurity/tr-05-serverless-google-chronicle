@@ -1,19 +1,5 @@
-import pytest
-from ctrlibrary.core import settings
 from ctrlibrary.core.utils import get_observables
-from ctrlibrary.threatresponse import token
 from ctrlibrary.threatresponse.enrich import enrich_post_health
-
-
-@pytest.fixture(scope='module')
-def module_token():
-    return token.request_token(
-        settings.server.ctr_client_id, settings.server.ctr_client_password)
-
-
-@pytest.fixture(scope='module')
-def module_headers(module_token):
-    return {'Authorization': 'Bearer {}'.format(module_token)}
 
 
 def test_positive_smoke_enrich_health(module_headers):
