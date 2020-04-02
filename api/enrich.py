@@ -42,10 +42,14 @@ def observe_observables():
             assets_data = chronicle_client.list_assets(x)
             ioc_details = chronicle_client.list_ioc_details(x)
 
-            sightings.extend(mapping.extract_sightings(assets_data))
-            indicators.extend(mapping.extract_indicators(ioc_details))
+            x_sightings = mapping.extract_sightings(assets_data)
+            x_indicators = mapping.extract_indicators(ioc_details)
+
+            sightings.extend(x_sightings)
+            indicators.extend(x_indicators)
+
             relationships.extend(
-                mapping.create_relationships(sightings, indicators)
+                mapping.create_relationships(x_sightings, x_indicators)
             )
 
     data = {}
