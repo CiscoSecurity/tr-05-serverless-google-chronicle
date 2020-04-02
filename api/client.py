@@ -40,8 +40,10 @@ class ChronicleClient:
         )
 
         response, body = self.client.request(
-            url, 'GET', headers={'Content-Type': 'application/json',
-                                 'Accept': 'application/json'}
+            url, 'GET',
+            headers={'Content-Type': 'application/json',
+                     'Accept': 'application/json',
+                     'User-Agent': current_app.config['USER_AGENT']}
         )
 
         if response.status != HTTPStatus.OK:
