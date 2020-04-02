@@ -1,8 +1,8 @@
 from functools import partial
-from itertools import chain
 
 from flask import Blueprint, current_app
 
+from api.client import ChronicleClient
 from api.mappings import Mapping
 from api.schemas import ObservableSchema
 from api.utils import (
@@ -25,26 +25,44 @@ def deliberate_observables():
 @enrich_api.route('/observe/observables', methods=['POST'])
 def observe_observables():
     http_client = get_chronicle_http_client(get_jwt())
+    chronicle_client = ChronicleClient(current_app.config['API_URL'],
+                                       http_client)
+
     observables = get_observables()
 
-    def _observe(observable):
-        type_ = observable['type']
+    sightings = []
+    indicators = []
+    relationships = []
 
-        mapping = Mapping.of(type_, current_app.config['API_URL'],
-                             http_client)
+    for x in observables:
 
-        return mapping.get(observable) if mapping is not None else []
+        mapping = Mapping.for_(x)
 
-    data = (_observe(x) for x in observables)
-    data = chain.from_iterable(data)
-    data = list(data)
+        if mapping:
+            assets_data = chronicle_client.list_assets(x)
+            ioc_details = chronicle_client.list_ioc_details(x)
 
-    return jsonify_data({
-        'sightings': {
-            'count': len(data),
-            'docs': data
-        }
-    })
+            sightings.extend(mapping.extract_sightings(assets_data))
+            indicators.extend(mapping.extract_indicators(ioc_details))
+            relationships.extend(
+                mapping.create_relationships(sightings, indicators)
+            )
+
+    data = {}
+
+    def format_docs(docs):
+        return {'count': len(docs), 'docs': docs}
+
+    if indicators:
+        data['indicators'] = format_docs(indicators)
+
+    if sightings:
+        data['sightings'] = format_docs(sightings)
+
+    if relationships:
+        data['relationships'] = format_docs(relationships)
+
+    return jsonify_data(data)
 
 
 @enrich_api.route('/refer/observables', methods=['POST'])

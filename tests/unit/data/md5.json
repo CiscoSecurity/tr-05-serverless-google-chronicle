@@ -1,8 +1,9 @@
 {
   "observable": {},
   "input": {
+    "assets": [],
+    "uri": ["uri"]
   },
   "output": [
-
   ]
 }

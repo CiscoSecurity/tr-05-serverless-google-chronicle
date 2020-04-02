@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
@@ -74,30 +72,6 @@ def join_url(base, *parts):
         [base.rstrip('/')] +
         [part.strip('/') for part in parts]
     )
-
-
-class TimeFilter:
-    def __init__(self):
-        self.end = datetime.utcnow()
-        delta = timedelta(
-            days=current_app.config[
-                'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
-            ]
-        )
-        self.start = self.end - delta
-
-    @staticmethod
-    def format_time_to_arg(input_datetime):
-        """
-           Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
-           acceptable by Chronicle Backstory API
-
-        """
-        return f'{input_datetime.isoformat(timespec="seconds")}Z'
-
-    def __str__(self):
-        return (f'&start_time={self.format_time_to_arg(self.start)}'
-                f'&end_time={self.format_time_to_arg(self.end)}')
 
 
 def all_subclasses(cls):
