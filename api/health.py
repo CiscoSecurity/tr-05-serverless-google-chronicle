@@ -1,9 +1,6 @@
-from http import HTTPStatus
-
 from flask import Blueprint, current_app
 
-from api.client import TimeFilter
-from api.errors import UnexpectedChronicleResponseError
+from api.client import TimeFilter, ChronicleClient
 from api.utils import (
     jsonify_data,
     get_chronicle_http_client,
@@ -24,14 +21,10 @@ def health():
     )
 
     http_client = get_chronicle_http_client(get_jwt())
+    chronicle_client = ChronicleClient(current_app.config['API_URL'],
+                                       http_client)
 
-    response, body = http_client.request(
-        url, 'GET', headers={'Content-Type': 'application/json',
-                             'Accept': 'application/json',
-                             'User-Agent': current_app.config['USER_AGENT']}
-    )
+    _ = chronicle_client.list_assets({'type': 'domain',
+                                      'value': 'www.google.com'})
 
-    if response.status != HTTPStatus.OK:
-        raise UnexpectedChronicleResponseError(body)
-    else:
-        return jsonify_data({'status': 'ok'})
+    return jsonify_data({'status': 'ok'})
