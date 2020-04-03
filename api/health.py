@@ -27,7 +27,8 @@ def health():
 
     response, body = http_client.request(
         url, 'GET', headers={'Content-Type': 'application/json',
-                             'Accept': 'application/json'}
+                             'Accept': 'application/json',
+                             'User-Agent': current_app.config['USER_AGENT']}
     )
 
     if response.status != HTTPStatus.OK:
