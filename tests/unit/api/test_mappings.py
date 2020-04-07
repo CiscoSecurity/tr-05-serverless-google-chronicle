@@ -1,9 +1,50 @@
 import json
 
+from pytest import fixture
+
 from api.mappings import (
     Domain, Mapping, SHA256,
     IP, IPV6, MD5, SHA1
 )
+
+from collections import namedtuple
+File_Mapping = namedtuple('File_Mapping', 'file mapping')
+
+
+def data_data():
+
+    yield File_Mapping('domain.json', Domain({"type": "domain", "value": "cisco.com"}))
+    yield File_Mapping('ip.json', IP({"type": "ip", "value": "127.0.0.1"}))
+    yield File_Mapping('ipv6.json',
+           IPV6({"type": "ipv6",
+                 "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"}))
+    yield File_Mapping('md5.json', MD5({"type": "domain", "value": "cisco.com"}))
+    yield File_Mapping('sha1.json', SHA1({"type": "domain", "value": "cisco.com"}))
+    yield File_Mapping('sha256.json', SHA256({"type": "domain", "value": "cisco.com"}))
+
+
+@fixture(scope='module', params=data_data(), ids=lambda d: str(d))
+def test_data(request):
+    return request.param
+
+
+def tests():
+    yield 'extract_sightings'
+    yield 'extract_indicators'
+
+
+@fixture(scope='module', params=tests(), ids=lambda d: str(d))
+def test_test(request):
+    return request.param
+
+
+def test_map(test_data, test_test):
+    with open('tests/unit/data/' + test_data.file) as file:
+        data = json.load(file)
+        sightings = getattr(test_data.mapping, test_test)(data[test_test]['input'])
+        for sighting in sightings:
+            assert sighting.pop('id').startswith('transient:')
+        assert sightings == data[test_test]['output']
 
 
 def test_mapping_of():
@@ -14,64 +55,6 @@ def test_mapping_of():
     assert isinstance(Mapping.for_({'type': 'ipv6'}), IPV6)
     assert isinstance(Mapping.for_({'type': 'md5'}), MD5)
     assert Mapping.for_({'type': 'whatever'}) is None
-
-
-def test_domain_map():
-    m = Domain({"type":  "domain", "value": "cisco.com"})
-    assert_maps_correctly_sightings(m, 'domain.json')
-    assert_maps_correctly_indicators(m, 'domain.json')
-
-
-def test_md5_map():
-    # ToDo: Add more data to file md5.json.
-    m = MD5({})
-    assert_maps_correctly_sightings(m, 'md5.json')
-    assert_maps_correctly_indicators(m, 'md5.json')
-
-
-def test_sha256_map():
-    # ToDo: Add more data to file sha256.json.
-    m = SHA256({})
-    assert_maps_correctly_sightings(m, 'sha256.json')
-    assert_maps_correctly_indicators(m, 'sha256.json')
-
-
-def test_sha1_map():
-    # ToDo: Add more data to file sha1.json.
-    m = SHA1({})
-    assert_maps_correctly_sightings(m, 'sha1.json')
-    assert_maps_correctly_indicators(m, 'sha1.json')
-
-
-def test_ip_map():
-    m = IP({"type": "ip", "value": "127.0.0.1"})
-    assert_maps_correctly_sightings(m, 'ip.json')
-    assert_maps_correctly_indicators(m, 'ip.json')
-
-
-def test_ipv6_map():
-    m = IPV6({"type": "ipv6",
-              "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"})
-    assert_maps_correctly_sightings(m,'ipv6.json')
-    assert_maps_correctly_indicators(m,'ipv6.json')
-
-
-def assert_maps_correctly_sightings(mapping, path):
-    with open('tests/unit/data/' + path) as file:
-        data = json.load(file)
-        sightings = mapping.extract_sightings(data['extract_sightings']['input'])
-        for sighting in sightings:
-            assert sighting.pop('id').startswith('transient:')
-        assert sightings == data['extract_sightings']['output']
-
-
-def assert_maps_correctly_indicators(mapping, path):
-    with open('tests/unit/data/' + path) as file:
-        data = json.load(file)
-        indicators = mapping.extract_indicators(data['extract_indicators']['input'])
-        for indicator in indicators:
-            assert indicator.pop('id').startswith('transient:')
-        assert indicators == data['extract_indicators']['output']
 
 
 def test_create_relationships():
@@ -115,7 +98,3 @@ def test_create_relationships():
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's3', 'target_ref': 'i2'}
     ]
-
-
-
-
