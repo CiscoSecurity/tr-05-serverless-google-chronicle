@@ -1,95 +1,140 @@
 {
-  "observable": {"type":  "domain", "value": "cisco.com"},
-  "input": {
-    "assets": [
-      {
-        "asset": {
-          "hostname": "thomas-garcia-laptop"
-        },
-        "firstSeenArtifactInfo": {
-          "artifactIndicator": {
-            "domainName": "www.cisco.com"
+  "extract_sightings": {
+    "input": {
+      "assets": [
+        {
+          "asset": {
+            "hostname": "thomas-garcia-laptop"
           },
-          "seenTime": "2018-10-10T12:28:19Z"
-        },
-        "lastSeenArtifactInfo": {
-          "artifactIndicator": {
-            "domainName": "cisco.com"
+          "firstSeenArtifactInfo": {
+            "artifactIndicator": {
+              "domainName": "www.cisco.com"
+            },
+            "seenTime": "2018-10-10T12:28:19Z"
           },
-          "seenTime": "2020-03-17T05:17:19Z"
+          "lastSeenArtifactInfo": {
+            "artifactIndicator": {
+              "domainName": "cisco.com"
+            },
+            "seenTime": "2020-03-17T05:17:19Z"
+          }
         }
+      ],
+      "uri": [
+        "uri"
+      ]
+    },
+    "output": [
+      {
+        "confidence": "High",
+        "count": 1,
+        "internal": true,
+        "observables": [
+          {
+            "type": "domain",
+            "value": "www.cisco.com"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2018-10-10T12:28:19Z"
+        },
+        "schema_version": "1.0.16",
+        "source": "Chronicle",
+        "source_uri": "uri",
+        "targets": [
+          {
+            "observables": [
+              {
+                "type": "hostname",
+                "value": "thomas-garcia-laptop"
+              }
+            ],
+            "observed_time": {
+              "start_time": "2018-10-10T12:28:19Z"
+            },
+            "type": "endpoint"
+          }
+        ],
+        "title": "Found in Chronicle",
+        "type": "sighting"
+      },
+      {
+        "confidence": "High",
+        "count": 1,
+        "internal": true,
+        "observables": [
+          {
+            "type": "domain",
+            "value": "cisco.com"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2020-03-17T05:17:19Z"
+        },
+        "schema_version": "1.0.16",
+        "source": "Chronicle",
+        "source_uri": "uri",
+        "targets": [
+          {
+            "observables": [
+              {
+                "type": "hostname",
+                "value": "thomas-garcia-laptop"
+              }
+            ],
+            "observed_time": {
+              "start_time": "2020-03-17T05:17:19Z"
+            },
+            "type": "endpoint"
+          }
+        ],
+        "title": "Found in Chronicle",
+        "type": "sighting"
       }
-    ],
-    "uri": [
-      "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z"
     ]
   },
-  "output": [
-    {
-      "confidence": "High",
-      "count": 1,
-      "internal": true,
-      "observables": [
+  "extract_indicators": {
+    "input": {
+      "sources": [
         {
-          "type": "domain",
-          "value": "www.cisco.com"
-        }
-      ],
-      "observed_time": {
-        "start_time": "2018-10-10T12:28:19Z"
-      },
-      "schema_version": "1.0.16",
-      "source": "Chronicle",
-      "source_uri": "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
-      "targets": [
-        {
-          "observables": [
+          "sourceUrl": "uri",
+          "confidenceScore": {
+            "strRawConfidenceScore": "102"
+          },
+          "rawSeverity": "High",
+          "category": "Malware Command and Control Server",
+          "addresses": [
             {
-              "type": "hostname",
-              "value": "thomas-garcia-laptop"
+              "port": [
+                80
+              ],
+              "domain": "avira.com"
             }
           ],
-          "observed_time": {
-            "start_time": "2018-10-10T12:28:19Z"
-          },
-          "type": "endpoint"
+          "firstActiveTime": "2020-03-18T00:00:00Z",
+          "lastActiveTime": "2020-03-26T00:00:00Z"
         }
       ],
-      "title": "Found in Chronicle",
-      "type": "sighting"
+      "uri": [
+        "uri"
+      ]
     },
-    {
-      "confidence": "High",
-      "count": 1,
-      "internal": true,
-      "observables": [
-        {
-          "type": "domain",
-          "value": "cisco.com"
-        }
-      ],
-      "observed_time": {
-        "start_time": "2020-03-17T05:17:19Z"
-      },
-      "schema_version": "1.0.16",
-      "source": "Chronicle",
-      "source_uri": "https://demodev.backstory.chronicle.security/domainResults?domain=cisco.com&selectedList=DomainViewDistinctAssets&whoIsTimestamp=2020-03-19T13%3A29%3A17.170164930Z",
-      "targets": [
-        {
-          "observables": [
-            {
-              "type": "hostname",
-              "value": "thomas-garcia-laptop"
-            }
-          ],
-          "observed_time": {
-            "start_time": "2020-03-17T05:17:19Z"
-          },
-          "type": "endpoint"
-        }
-      ],
-      "title": "Found in Chronicle",
-      "type": "sighting"
-    }
-  ]
+    "output": [
+      {
+        "schema_version": "1.0.16",
+        "type": "indicator",
+        "producer": "Chronicle",
+        "valid_time": {},
+        "confidence": "High",
+        "severity": "High",
+        "short_description": "Malware Command and Control Server",
+        "external_references": [
+          {
+            "source_name": "Chronicle IOC",
+            "url": "uri"
+          }
+        ]
+      }
+    ]
+  }
 }

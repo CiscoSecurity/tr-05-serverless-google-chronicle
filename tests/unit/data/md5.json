@@ -1,9 +1,17 @@
 {
-  "observable": {},
-  "input": {
-    "assets": [],
-    "uri": ["uri"]
+  "extract_sightings": {
+    "input": {
+      "assets": [
+      ],
+       "uri": [
+        "uri"
+      ]
+    },
+    "output": [
+    ]
   },
-  "output": [
-  ]
+  "extract_indicators": {
+    "input": {},
+    "output": []
+  }
 }
