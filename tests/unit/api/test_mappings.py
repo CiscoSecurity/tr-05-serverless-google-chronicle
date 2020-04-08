@@ -8,46 +8,55 @@ from api.mappings import (
 )
 
 from collections import namedtuple
-File_Mapping = namedtuple('File_Mapping', 'file mapping')
 
 
-def data_data():
+def input_sets():
+    TestData = namedtuple('TestData', 'file mapping')
+    yield TestData('domain.json',
+                   Domain({'type': 'domain', 'value': 'cisco.com'}))
+    yield TestData('ip.json', IP({'type': 'ip', 'value': '127.0.0.1'}))
+    yield TestData('ipv6.json',
+                   IPV6({'type': 'ipv6',
+                         'value': '2001:0db8:85a3:0000:0000:8a2e:0370:7334'}))
+    yield TestData('md5.json',
+                   MD5({'type': 'md5',
+                        'value': 'feeeb7d9b65e7c0624aee185c969a723'}))
+    yield TestData('sha1.json',
+                   SHA1({'type': 'sha1',
+                         'value': 'ad90dfe35a50ec9b6b93f720f036b1a6f6b32c4c'}))
+    yield TestData('sha256.json',
+                   SHA256({'type': 'sha256',
+                           'value': ('66489577986bc78cf66cbb2333350b8872faf31'
+                                     'da241d23735ace67e12510143')}))
 
-    yield File_Mapping('domain.json', Domain({"type": "domain", "value": "cisco.com"}))
-    yield File_Mapping('ip.json', IP({"type": "ip", "value": "127.0.0.1"}))
-    yield File_Mapping('ipv6.json',
-           IPV6({"type": "ipv6",
-                 "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"}))
-    yield File_Mapping('md5.json', MD5({"type": "domain", "value": "cisco.com"}))
-    yield File_Mapping('sha1.json', SHA1({"type": "domain", "value": "cisco.com"}))
-    yield File_Mapping('sha256.json', SHA256({"type": "domain", "value": "cisco.com"}))
 
-
-@fixture(scope='module', params=data_data(), ids=lambda d: str(d))
-def test_data(request):
+@fixture(scope='module', params=input_sets(), ids=lambda d: d.file)
+def input_data(request):
     return request.param
 
 
-def tests():
+def methods():
     yield 'extract_sightings'
     yield 'extract_indicators'
 
 
-@fixture(scope='module', params=tests(), ids=lambda d: str(d))
-def test_test(request):
+@fixture(scope='module', params=methods())
+def method(request):
     return request.param
 
 
-def test_map(test_data, test_test):
-    with open('tests/unit/data/' + test_data.file) as file:
+def test_map(input_data, method):
+    with open('tests/unit/data/' + input_data.file) as file:
         data = json.load(file)
-        sightings = getattr(test_data.mapping, test_test)(data[test_test]['input'])
-        for sighting in sightings:
-            assert sighting.pop('id').startswith('transient:')
-        assert sightings == data[test_test]['output']
+
+        results = getattr(input_data.mapping, method)(data[method]['input'])
+
+        for record in results:
+            assert record.pop('id').startswith('transient:')
+        assert results == data[method]['output']
 
 
-def test_mapping_of():
+def test_mapping_for_():
     assert isinstance(Mapping.for_({'type': 'domain'}), Domain)
     assert isinstance(Mapping.for_({'type': 'sha256'}), SHA256)
     assert isinstance(Mapping.for_({'type': 'sha1'}), SHA1)

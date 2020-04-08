@@ -2,16 +2,131 @@
   "extract_sightings": {
     "input": {
       "assets": [
+        {
+          "asset": {
+            "hostname": "thomas-garcia-laptop"
+          },
+          "firstSeenArtifactInfo": {
+            "artifactIndicator": {
+              "hashSha1": "ad90dfe35a50ec9b6b93f720f036b1a6f6b32c4c"
+            },
+            "seenTime": "2018-10-10T12:28:19Z"
+          },
+          "lastSeenArtifactInfo": {
+            "artifactIndicator": {
+              "hashSha1": "ad90dfe35a50ec9b6b93f720f036b1a6f6b32c4c"
+            },
+            "seenTime": "2020-03-17T05:17:19Z"
+          }
+        }
       ],
-       "uri": [
+      "uri": [
         "uri"
       ]
     },
     "output": [
+      {
+        "confidence": "High",
+        "count": 1,
+        "internal": true,
+        "observables": [
+          {
+            "type": "sha1",
+            "value": "ad90dfe35a50ec9b6b93f720f036b1a6f6b32c4c"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2018-10-10T12:28:19Z"
+        },
+        "schema_version": "1.0.16",
+        "source": "Chronicle",
+        "source_uri": "uri",
+        "targets": [
+          {
+            "observables": [
+              {
+                "type": "hostname",
+                "value": "thomas-garcia-laptop"
+              }
+            ],
+            "observed_time": {
+              "start_time": "2018-10-10T12:28:19Z"
+            },
+            "type": "endpoint"
+          }
+        ],
+        "title": "Found in Chronicle",
+        "type": "sighting"
+      },
+      {
+        "confidence": "High",
+        "count": 1,
+        "internal": true,
+        "observables": [
+          {
+            "type": "sha1",
+            "value": "ad90dfe35a50ec9b6b93f720f036b1a6f6b32c4c"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2020-03-17T05:17:19Z"
+        },
+        "schema_version": "1.0.16",
+        "source": "Chronicle",
+        "source_uri": "uri",
+        "targets": [
+          {
+            "observables": [
+              {
+                "type": "hostname",
+                "value": "thomas-garcia-laptop"
+              }
+            ],
+            "observed_time": {
+              "start_time": "2020-03-17T05:17:19Z"
+            },
+            "type": "endpoint"
+          }
+        ],
+        "title": "Found in Chronicle",
+        "type": "sighting"
+      }
     ]
   },
   "extract_indicators": {
-    "input": {},
-    "output": []
+    "input": {
+      "sources": [
+        {
+          "sourceUrl": "uri",
+          "confidenceScore": {
+            "strRawConfidenceScore": ""
+          },
+          "rawSeverity": "n/a",
+          "category": "Malware Command and Control Server",
+          "firstActiveTime": "2020-03-18T00:00:00Z",
+          "lastActiveTime": "2020-03-26T00:00:00Z"
+        }
+      ],
+      "uri": [
+        "uri"
+      ]
+    },
+    "output": [
+      {
+        "schema_version": "1.0.16",
+        "type": "indicator",
+        "producer": "Chronicle",
+        "valid_time": {},
+        "confidence": "None",
+        "severity": "None",
+        "short_description": "Malware Command and Control Server",
+        "external_references": [
+          {
+            "source_name": "Chronicle IOC",
+            "url": "uri"
+          }
+        ]
+      }
+    ]
   }
 }
