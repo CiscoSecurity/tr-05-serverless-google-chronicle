@@ -1,4 +1,5 @@
 import json
+from collections import namedtuple
 
 from pytest import fixture
 
@@ -6,8 +7,6 @@ from api.mappings import (
     Domain, Mapping, SHA256,
     IP, IPV6, MD5, SHA1
 )
-
-from collections import namedtuple
 
 
 def input_sets():
