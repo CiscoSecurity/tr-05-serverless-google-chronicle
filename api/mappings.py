@@ -148,7 +148,8 @@ class Mapping(metaclass=ABCMeta):
         sources = ioc_details.get('sources', [])
         return [indicator(source) for source in sources]
 
-    def create_relationships(self, sightings, indicators):
+    @staticmethod
+    def create_relationships(sightings, indicators):
         def sighting_of(sighting, indicator):
             return {
                 **CTIM_DEFAULTS,
