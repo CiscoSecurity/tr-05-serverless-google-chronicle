@@ -29,6 +29,7 @@ def observe_observables():
                                        http_client)
 
     observables = get_observables()
+    limit = current_app.config['CTR_ENTITIES_LIMIT']
 
     sightings = []
     indicators = []
@@ -39,11 +40,11 @@ def observe_observables():
         mapping = Mapping.for_(x)
 
         if mapping:
-            assets_data = chronicle_client.list_assets(x)
+            assets_data = chronicle_client.list_assets(x, limit)
             ioc_details = chronicle_client.list_ioc_details(x)
 
-            x_sightings = mapping.extract_sightings(assets_data)
-            x_indicators = mapping.extract_indicators(ioc_details)
+            x_sightings = mapping.extract_sightings(assets_data, limit)
+            x_indicators = mapping.extract_indicators(ioc_details, limit)
 
             sightings.extend(x_sightings)
             indicators.extend(x_indicators)

@@ -1,3 +1,5 @@
+from collections import UserList
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
@@ -80,3 +82,28 @@ def all_subclasses(cls):
     """
     subclasses = set(cls.__subclasses__())
     return subclasses.union(s for c in subclasses for s in all_subclasses(c))
+
+
+class LimitExceededError(Exception):
+    pass
+
+
+class LimitedList(UserList):
+    """
+    Redefining list methods to limit number of items.
+    """
+    def __init__(self, size_limit=None):
+        super().__init__()
+        self.limit = size_limit
+
+    def _check_limit(self, income_len):
+        if len(self) + income_len > self.limit:
+            raise LimitExceededError()
+
+    def append(self, item) -> None:
+        self._check_limit(1)
+        super().append(item)
+
+    def extend(self, other):
+        self._check_limit(len(list(other)))
+        super().extend(other)

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from uuid import uuid4
 
-from api.utils import all_subclasses
+from api.utils import all_subclasses, LimitedList, LimitExceededError
 
 NONE = 'None'
 INFO = 'Info'
@@ -10,7 +10,6 @@ MEDIUM = 'Medium'
 HIGH = 'High'
 UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
-
 
 CTIM_DEFAULTS = {
     'schema_version': '1.0.16',
@@ -37,7 +36,7 @@ class Mapping(metaclass=ABCMeta):
     def type(cls):
         """Returns the observable type that the mapping is able to process."""
 
-    def extract_sightings(self, assets_data):
+    def extract_sightings(self, assets_data, limit):
         def sighting(asset, artifact):
             artifact_observables = self.artifact_observables(artifact)
             if artifact_observables:
@@ -71,13 +70,21 @@ class Mapping(metaclass=ABCMeta):
 
         assets = assets_data.get('assets', [])
         uri = assets_data['uri'][0]
-        sightings = []
+        sightings = LimitedList(size_limit=limit)
 
         for asset in assets:
-            sightings.append(sighting(asset['asset'],
-                                      asset['firstSeenArtifactInfo']))
-            sightings.append(sighting(asset['asset'],
-                                      asset['lastSeenArtifactInfo']))
+            first_artifact = asset['firstSeenArtifactInfo']
+            last_artifact = asset.get('lastSeenArtifactInfo')
+
+            try:
+
+                sightings.append(sighting(asset['asset'], first_artifact))
+
+                if last_artifact and last_artifact != first_artifact:
+                    sightings.append(sighting(asset['asset'], last_artifact))
+
+            except LimitExceededError:
+                break
 
         return [s for s in sightings if s is not None]
 
@@ -121,7 +128,7 @@ class Mapping(metaclass=ABCMeta):
         """Retrieves CTR observables list from Chronicle Artifact."""
         return self.get_observables(artifact['artifactIndicator'])
 
-    def extract_indicators(self, ioc_details):
+    def extract_indicators(self, ioc_details, limit):
         def indicator(source):
             r = {
                 **CTIM_DEFAULTS,
@@ -145,7 +152,7 @@ class Mapping(metaclass=ABCMeta):
 
             return r
 
-        sources = ioc_details.get('sources', [])
+        sources = ioc_details.get('sources', [])[:limit]
         return [indicator(source) for source in sources]
 
     @staticmethod
@@ -231,8 +238,6 @@ class IP(Mapping):
         return ips
 
     def resolved_domains_relationships(self):
-        self.resolved_domains = sorted(self.resolved_domains)
-
         def resolved_to(domain, ip_observable):
             return {
                 "origin": "Chronicle Enrichment Module",
@@ -247,13 +252,14 @@ class IP(Mapping):
                 }
             }
 
+        resolved_domains = sorted(self.resolved_domains)
         return [
             resolved_to(domain, self.observable)
-            for domain in self.resolved_domains
+            for domain in resolved_domains
         ]
 
-    def extract_sightings(self, assets_data):
-        sightings = super().extract_sightings(assets_data)
+    def extract_sightings(self, assets_data, limit):
+        sightings = super().extract_sightings(assets_data, limit)
         relationships = self.resolved_domains_relationships()
 
         if sightings and relationships:
