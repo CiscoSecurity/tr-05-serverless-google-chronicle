@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 from uuid import uuid4
 
-from api.utils import all_subclasses, LimitedList, LimitExceededError
+from api.utils import all_subclasses
 
 NONE = 'None'
 INFO = 'Info'
@@ -40,15 +41,59 @@ class Mapping(metaclass=ABCMeta):
     def type(cls):
         """Returns the observable type that the mapping is able to process."""
 
+    FlattenAssertRecord = namedtuple(
+        'FlattenAssertRecord',
+        'asset_observables artifact_observables seen_time'
+    )
+
+    def prepare_asset_records(self, records):
+        """
+        Filters nonmappable Chronicle assets and
+        converts original Chronicle asset record:
+        {
+          "asset": {
+            "<asset_type>": "<asset_value>"
+          },
+          "firstSeenArtifactInfo": {
+            "artifactIndicator": {
+              "<artifact_type>": "<artifact_value>""
+            },
+            "seenTime": "<artifact_seen_time"
+          },
+          "lastSeenArtifactInfo": {
+            "artifactIndicator": {
+              "<artifact_type>": "<artifact_value>""
+            },
+            "seenTime": "<artifact_seen_time"
+          }
+        }
+
+        to FlattenAssertRecord.
+        """
+        results = []
+
+        for record in records:
+            first_artifact = record['firstSeenArtifactInfo']
+            last_artifact = record.get('lastSeenArtifactInfo')
+
+            to_add = (first_artifact,)
+            if last_artifact and last_artifact != first_artifact:
+                to_add = (first_artifact, last_artifact)
+
+            asset_observables = self.get_observables(record['asset'])
+            for artifact in to_add:
+                artifact_observables = self.artifact_observables(artifact)
+                if artifact_observables:
+                    results.append(
+                        self.FlattenAssertRecord(asset_observables,
+                                                 artifact_observables,
+                                                 artifact['seenTime'])
+                    )
+
+        return results
+
     def extract_sightings(self, assets_data, limit):
-        def sighting(asset, artifact):
-            artifact_observables = self.artifact_observables(artifact)
-
-            if not artifact_observables:
-                raise MissingDataError(
-                    f'No observables in artifact {artifact}'
-                )
-
+        def sighting(record):
             result = {
                 **CTIM_DEFAULTS,
                 'id': f'transient:{uuid4()}',
@@ -59,17 +104,16 @@ class Mapping(metaclass=ABCMeta):
                 'internal': True,
                 'count': asset_records_count,
                 'source_uri': uri,
-                'observables': artifact_observables,
-                'observed_time': {'start_time': artifact['seenTime']},
+                'observables': record.artifact_observables,
+                'observed_time': {'start_time': record.seen_time},
             }
 
-            asset_observables = self.get_observables(asset)
-            if asset_observables:
+            if record.asset_observables:
                 result['targets'] = [
                     {
                         'type': 'endpoint',
-                        'observables': asset_observables,
-                        'observed_time': {'start_time': artifact['seenTime']}
+                        'observables': record.asset_observables,
+                        'observed_time': {'start_time': record.seen_time}
                     }
                 ]
 
@@ -79,34 +123,11 @@ class Mapping(metaclass=ABCMeta):
         asset_records = assets_data.get('assets', [])
         asset_records_count = len(asset_records)
 
-        asset_records = self.flatten_asset_records(asset_records)
-        asset_records.sort(
-            key=lambda r: r['artifact']['seenTime'], reverse=True
-        )
+        asset_records = self.prepare_asset_records(asset_records)
+        asset_records.sort(key=lambda r: r.seen_time, reverse=True)
+        asset_records = asset_records[:limit]
 
-        sightings = []
-
-        for record in asset_records:
-            try:
-                sightings.append(sighting(record['asset'], record['artifact']))
-            except MissingDataError:
-                pass
-
-        return sightings[:limit]
-
-    @staticmethod
-    def flatten_asset_records(records):
-        results = []
-
-        for record in records:
-            first_artifact = record['firstSeenArtifactInfo']
-            results.append({**record, **{'artifact': first_artifact}})
-
-            last_artifact = record.get('lastSeenArtifactInfo')
-            if last_artifact and last_artifact != first_artifact:
-                results.append({**record, **{'artifact': last_artifact}})
-
-        return results
+        return [sighting(r) for r in asset_records]
 
     @staticmethod
     def get_observables(info):
