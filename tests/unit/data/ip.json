@@ -76,66 +76,7 @@
     ]
   },
     "output": [
-  {
-    "type": "sighting",
-    "schema_version": "1.0.16",
-    "confidence": "High",
-    "count": 4,
-    "source": "Chronicle",
-    "source_uri": "uri",
-    "internal": true,
-    "title": "Found in Chronicle",
-    "observables": [
       {
-        "value": "127.0.0.1",
-        "type": "ip"
-      }
-    ],
-    "observed_time": {
-      "start_time": "2019-02-24T04:45:30Z"
-    },
-    "targets": [
-      {
-        "type": "endpoint",
-        "observables": [
-          {
-            "value": "ina-mackey-laptop",
-            "type": "hostname"
-          }
-        ],
-        "observed_time": {
-          "start_time": "2019-02-24T04:45:30Z"
-        }
-      }
-    ],
-    "relations": [
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
-          "value": "anotherdomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "127.0.0.1",
-          "type": "ip"
-        }
-      },
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
-          "value": "somedomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "127.0.0.1",
-          "type": "ip"
-        }
-      }
-    ]
-  },
-  {
     "type": "sighting",
     "schema_version": "1.0.16",
     "confidence": "High",
@@ -194,7 +135,7 @@
       }
     ]
   },
-  {
+      {
     "type": "sighting",
     "schema_version": "1.0.16",
     "confidence": "High",
@@ -210,7 +151,7 @@
       }
     ],
     "observed_time": {
-      "start_time": "2019-01-24T04:45:30Z"
+      "start_time": "2020-02-05T19:02:21Z"
     },
     "targets": [
       {
@@ -222,7 +163,7 @@
           }
         ],
         "observed_time": {
-          "start_time": "2019-01-24T04:45:30Z"
+          "start_time": "2020-02-05T19:02:21Z"
         }
       }
     ],
@@ -253,7 +194,7 @@
       }
     ]
   },
-  {
+      {
     "type": "sighting",
     "schema_version": "1.0.16",
     "confidence": "High",
@@ -269,7 +210,7 @@
       }
     ],
     "observed_time": {
-      "start_time": "2020-02-05T19:02:21Z"
+      "start_time": "2019-02-24T04:45:30Z"
     },
     "targets": [
       {
@@ -281,7 +222,66 @@
           }
         ],
         "observed_time": {
-          "start_time": "2020-02-05T19:02:21Z"
+          "start_time": "2019-02-24T04:45:30Z"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "origin": "Chronicle Enrichment Module",
+        "relation": "Resolved_To",
+        "source": {
+          "value": "anotherdomain.com",
+          "type": "domain"
+        },
+        "related": {
+          "value": "127.0.0.1",
+          "type": "ip"
+        }
+      },
+      {
+        "origin": "Chronicle Enrichment Module",
+        "relation": "Resolved_To",
+        "source": {
+          "value": "somedomain.com",
+          "type": "domain"
+        },
+        "related": {
+          "value": "127.0.0.1",
+          "type": "ip"
+        }
+      }
+    ]
+  },
+      {
+    "type": "sighting",
+    "schema_version": "1.0.16",
+    "confidence": "High",
+    "count": 4,
+    "source": "Chronicle",
+    "source_uri": "uri",
+    "internal": true,
+    "title": "Found in Chronicle",
+    "observables": [
+      {
+        "value": "127.0.0.1",
+        "type": "ip"
+      }
+    ],
+    "observed_time": {
+      "start_time": "2019-01-24T04:45:30Z"
+    },
+    "targets": [
+      {
+        "type": "endpoint",
+        "observables": [
+          {
+            "value": "ina-mackey-laptop",
+            "type": "hostname"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2019-01-24T04:45:30Z"
         }
       }
     ],
