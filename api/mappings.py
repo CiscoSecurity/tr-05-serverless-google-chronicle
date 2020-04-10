@@ -17,10 +17,6 @@ CTIM_DEFAULTS = {
 }
 
 
-class MissingDataError(Exception):
-    pass
-
-
 class Mapping(metaclass=ABCMeta):
 
     def __init__(self, observable):

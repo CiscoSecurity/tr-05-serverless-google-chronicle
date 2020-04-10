@@ -8,7 +8,7 @@ class Config(object):
 
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
-    CTR_ENTITIES_DEFAULT_LIMIT = 2
+    CTR_ENTITIES_DEFAULT_LIMIT = 100
     CTR_ENTITIES_LIMIT = int(os.environ.get('CTR_ENTITIES_LIMIT',
                                             CTR_ENTITIES_DEFAULT_LIMIT))
 
