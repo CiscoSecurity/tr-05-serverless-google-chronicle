@@ -48,11 +48,22 @@ def test_map(input_data, method):
     with open('tests/unit/data/' + input_data.file) as file:
         data = json.load(file)
 
-        results = getattr(input_data.mapping, method)(data[method]['input'])
+        results = getattr(input_data.mapping, method)(data[method]['input'],
+                                                      100)
 
         for record in results:
             assert record.pop('id').startswith('transient:')
         assert results == data[method]['output']
+
+
+def test_limit(input_data, method):
+    with open('tests/unit/data/' + input_data.file) as file:
+        data = json.load(file)
+
+        for limit in (0, 1, 2, 25, 100):
+            results = getattr(input_data.mapping, method)(
+                data[method]['input'], limit)
+            assert len(results) <= limit
 
 
 def test_mapping_for_():

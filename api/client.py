@@ -32,11 +32,17 @@ class ChronicleClient:
 
         return f'artifact.{artifact_type}={observable["value"]}'
 
-    def _request_chronicle(self, path, observable, time_filter=None):
+    def _request_chronicle(self, path, observable,
+                           time_filter=None, page_size=None):
+
+        page_size_filter = ("&page_size=" + str(page_size)
+                            if page_size is not None else '')
+
         url = join_url(
             self.base_url,
             f'{path}?{self._artifact_filter(observable)}'
             f'{str(time_filter or "")}'
+            f'{page_size_filter or ""}'
         )
 
         response, body = self.client.request(
@@ -51,9 +57,10 @@ class ChronicleClient:
 
         return json.loads(body)
 
-    def list_assets(self, observable):
-        return self._request_chronicle('/artifact/listassets',
-                                       observable, TimeFilter())
+    def list_assets(self, observable, page_size=None):
+        return self._request_chronicle(
+            '/artifact/listassets', observable, TimeFilter(), page_size
+        )
 
     def list_ioc_details(self, observable):
         allowed_types = ('domain', 'ip', 'ipv6')

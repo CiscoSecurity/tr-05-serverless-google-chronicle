@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 from uuid import uuid4
 
 from api.utils import all_subclasses
@@ -10,7 +11,6 @@ MEDIUM = 'Medium'
 HIGH = 'High'
 UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
-
 
 CTIM_DEFAULTS = {
     'schema_version': '1.0.16',
@@ -37,49 +37,93 @@ class Mapping(metaclass=ABCMeta):
     def type(cls):
         """Returns the observable type that the mapping is able to process."""
 
-    def extract_sightings(self, assets_data):
-        def sighting(asset, artifact):
-            artifact_observables = self.artifact_observables(artifact)
-            if artifact_observables:
-                result = {
-                    **CTIM_DEFAULTS,
-                    'id': f'transient:{uuid4()}',
-                    'type': 'sighting',
-                    'source': 'Chronicle',
-                    'title': 'Found in Chronicle',
-                    'confidence': HIGH,
-                    'internal': True,
-                    'count': len(assets),
-                    'source_uri': uri,
-                    'observables': artifact_observables,
-                    'observed_time': {'start_time': artifact['seenTime']},
-                }
-            else:
-                return None
+    FlattenAssertRecord = namedtuple(
+        'FlattenAssertRecord',
+        'asset_observables artifact_observables seen_time'
+    )
 
-            asset_observables = self.get_observables(asset)
-            if asset_observables:
+    def prepare_asset_records(self, records):
+        """
+        Filters nonmappable Chronicle assets and
+        converts original Chronicle asset record:
+        {
+          "asset": {
+            "<asset_type>": "<asset_value>"
+          },
+          "firstSeenArtifactInfo": {
+            "artifactIndicator": {
+              "<artifact_type>": "<artifact_value>""
+            },
+            "seenTime": "<artifact_seen_time"
+          },
+          "lastSeenArtifactInfo": {
+            "artifactIndicator": {
+              "<artifact_type>": "<artifact_value>""
+            },
+            "seenTime": "<artifact_seen_time"
+          }
+        }
+
+        to FlattenAssertRecord.
+        """
+        results = []
+
+        for record in records:
+            first_artifact = record['firstSeenArtifactInfo']
+            last_artifact = record.get('lastSeenArtifactInfo')
+
+            to_add = (first_artifact,)
+            if last_artifact and last_artifact != first_artifact:
+                to_add = (first_artifact, last_artifact)
+
+            asset_observables = self.get_observables(record['asset'])
+            for artifact in to_add:
+                artifact_observables = self.artifact_observables(artifact)
+                if artifact_observables:
+                    results.append(
+                        self.FlattenAssertRecord(asset_observables,
+                                                 artifact_observables,
+                                                 artifact['seenTime'])
+                    )
+
+        return results
+
+    def extract_sightings(self, assets_data, limit):
+        def sighting(record):
+            result = {
+                **CTIM_DEFAULTS,
+                'id': f'transient:{uuid4()}',
+                'type': 'sighting',
+                'source': 'Chronicle',
+                'title': 'Found in Chronicle',
+                'confidence': HIGH,
+                'internal': True,
+                'count': asset_records_count,
+                'source_uri': uri,
+                'observables': record.artifact_observables,
+                'observed_time': {'start_time': record.seen_time},
+            }
+
+            if record.asset_observables:
                 result['targets'] = [
                     {
                         'type': 'endpoint',
-                        'observables': asset_observables,
-                        'observed_time': {'start_time': artifact['seenTime']}
+                        'observables': record.asset_observables,
+                        'observed_time': {'start_time': record.seen_time}
                     }
                 ]
 
             return result
 
-        assets = assets_data.get('assets', [])
         uri = assets_data['uri'][0]
-        sightings = []
+        asset_records = assets_data.get('assets', [])
+        asset_records_count = len(asset_records)
 
-        for asset in assets:
-            sightings.append(sighting(asset['asset'],
-                                      asset['firstSeenArtifactInfo']))
-            sightings.append(sighting(asset['asset'],
-                                      asset['lastSeenArtifactInfo']))
+        asset_records = self.prepare_asset_records(asset_records)
+        asset_records.sort(key=lambda r: r.seen_time, reverse=True)
+        asset_records = asset_records[:limit]
 
-        return [s for s in sightings if s is not None]
+        return [sighting(r) for r in asset_records]
 
     @staticmethod
     def get_observables(info):
@@ -121,7 +165,7 @@ class Mapping(metaclass=ABCMeta):
         """Retrieves CTR observables list from Chronicle Artifact."""
         return self.get_observables(artifact['artifactIndicator'])
 
-    def extract_indicators(self, ioc_details):
+    def extract_indicators(self, ioc_details, limit):
         def indicator(source):
             r = {
                 **CTIM_DEFAULTS,
@@ -145,7 +189,7 @@ class Mapping(metaclass=ABCMeta):
 
             return r
 
-        sources = ioc_details.get('sources', [])
+        sources = ioc_details.get('sources', [])[:limit]
         return [indicator(source) for source in sources]
 
     @staticmethod
@@ -231,8 +275,6 @@ class IP(Mapping):
         return ips
 
     def resolved_domains_relationships(self):
-        self.resolved_domains = sorted(self.resolved_domains)
-
         def resolved_to(domain, ip_observable):
             return {
                 "origin": "Chronicle Enrichment Module",
@@ -247,13 +289,14 @@ class IP(Mapping):
                 }
             }
 
+        resolved_domains = sorted(self.resolved_domains)
         return [
             resolved_to(domain, self.observable)
-            for domain in self.resolved_domains
+            for domain in resolved_domains
         ]
 
-    def extract_sightings(self, assets_data):
-        sightings = super().extract_sightings(assets_data)
+    def extract_sightings(self, assets_data, limit):
+        sightings = super().extract_sightings(assets_data, limit)
         relationships = self.resolved_domains_relationships()
 
         if sightings and relationships:
