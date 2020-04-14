@@ -15,7 +15,7 @@ class Config(object):
         custom_limit = int(os.environ['CTR_ENTITIES_LIMIT'])
         if custom_limit > 0:
             CTR_ENTITIES_LIMIT = custom_limit
-    except:
+    except Exception:
         pass
 
     DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER = 90
