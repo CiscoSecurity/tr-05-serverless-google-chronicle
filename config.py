@@ -9,8 +9,14 @@ class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
     CTR_ENTITIES_DEFAULT_LIMIT = 100
-    CTR_ENTITIES_LIMIT = int(os.environ.get('CTR_ENTITIES_LIMIT',
-                                            CTR_ENTITIES_DEFAULT_LIMIT))
+    CTR_ENTITIES_LIMIT = CTR_ENTITIES_DEFAULT_LIMIT
+
+    try:
+        custom_limit = int(os.environ['CTR_ENTITIES_LIMIT'])
+        if custom_limit > 0:
+            CTR_ENTITIES_LIMIT = custom_limit
+    except:
+        pass
 
     DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER = 90
 
