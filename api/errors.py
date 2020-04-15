@@ -26,7 +26,7 @@ class UnexpectedChronicleResponseError(TRFormattedError):
         title = f"Unexpected response from Chronicle Backstory"
 
         if response.status == HTTPStatus.INTERNAL_SERVER_ERROR:
-            super().__init__(UNKNOWN, f"{title}: '{response.reason}'")
+            super().__init__(UNKNOWN, f"{title}: {response.reason}")
         else:
 
             status_mapping = {
@@ -48,7 +48,7 @@ class UnexpectedChronicleResponseError(TRFormattedError):
                        or error_payload.get('details', None)
                        or response.reason)
 
-            super().__init__(status, f"{title}: '{message}'")
+            super().__init__(status, f"{title}: {message}")
 
 
 class InvalidJWTError(TRFormattedError):

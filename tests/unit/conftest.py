@@ -128,8 +128,8 @@ def unauthorized_creds_expected_payload(route):
         return {
             'errors': [
                 {'code': PERMISSION_DENIED,
-                 'message': ("Unexpected response from Chronicle Backstory:"
-                             " 'Wrong creds!'"),
+                 'message': ("Unexpected response from Chronicle Backstory: "
+                             "Wrong creds!"),
                  'type': 'fatal'}
             ]
         }
