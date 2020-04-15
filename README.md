@@ -10,6 +10,49 @@ An already deployed Relay API (e.g., packaged as an AWS Lambda Function) can
 be pushed to Threat Response as a Relay Module using the
 [Threat Response Relay CLI](https://github.com/threatgrid/tr-lambda-relay).
 
+## Details
+
+Chronicle Backstory Relay API implements the following endpoints:
+- `/observe/observables`
+- `/health`
+
+Other endpoints (`/deliberate/observables`, `/refer/observables`,
+ `/respond/observables`, `/respond/trigger`) returns empty responses.
+
+Supported types of observables:
+- `ip`
+- `ipv6`
+- `domain`
+- `md5`
+- `sha1`
+- `sha256`
+
+Other types of observables are ignored.
+
+## Authorization
+
+To query Chronicle Backstory API, Google API client credentials are used.
+The credentials file has the following structure:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "",
+  "private_key_id": "",
+  "private_key": "",
+  "client_id": "",
+  "auth_uri": "",
+  "token_uri": "",
+  "auth_provider_x509_cert_url": "",
+  "client_x509_cert_url": ""
+}
+```
+
+Credentials must be encrypted with JWT.
+After encryption set your `SECRET_KEY` environment 
+variable in AWS lambda for successful decryption in Relay API.
+
+
 ## Installation
 
 ```bash
@@ -31,13 +74,22 @@ pip install -U -r test-requirements.txt
 pip install -U -r deploy-requirements.txt
 ```
 
-As an AWS Lambda Function:
+#### As an AWS Lambda Function:
 - Deploy: `zappa deploy dev`.
 - Check: `zappa status dev`.
 - Update: `zappa update dev`.
 - Monitor: `zappa tail dev --http`.
 
-As a TR Relay Module:
+Environment Variables:
+
+- `SECRET_KEY` - string key used while `JWT` encoding. Mandatory variable.
+  
+- `CTR_ENTITIES_LIMIT` - the maximum number of entities in a response.
+ Applicable to: `Sighting`, `Indicator`, `Verdict`, `Judgement`.
+ Must be an integer, greater than zero.
+ Default value - `100`, used if the variable is not set or set variable is incorrect.
+
+#### As a TR Relay Module:
 - Create: `relay add`.
 - Update: `relay edit`.
 - Delete: `relay remove`.
