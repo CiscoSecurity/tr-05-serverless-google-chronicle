@@ -88,35 +88,35 @@ class Mapping(metaclass=ABCMeta):
 
         return results
 
+    def _sighting(self, record, raw_data_count, uri):
+        result = {
+            **CTIM_DEFAULTS,
+            'id': f'transient:{uuid4()}',
+            'type': 'sighting',
+            'source': 'Chronicle',
+            'title': 'Found in Chronicle',
+            'confidence': HIGH,
+            'internal': True,
+            'count': raw_data_count,
+            'observables': record.artifact_observables,
+            'observed_time': {'start_time': record.seen_time},
+        }
+
+        if uri:
+            result['source_uri'] = uri
+
+        if record.asset_observables:
+            result['targets'] = [
+                {
+                    'type': 'endpoint',
+                    'observables': record.asset_observables,
+                    'observed_time': {'start_time': record.seen_time}
+                }
+            ]
+
+        return result
+
     def extract_sightings(self, assets_data, limit):
-        def sighting(record):
-            result = {
-                **CTIM_DEFAULTS,
-                'id': f'transient:{uuid4()}',
-                'type': 'sighting',
-                'source': 'Chronicle',
-                'title': 'Found in Chronicle',
-                'confidence': HIGH,
-                'internal': True,
-                'count': asset_records_count,
-                'observables': record.artifact_observables,
-                'observed_time': {'start_time': record.seen_time},
-            }
-
-            if uri:
-                result['source_uri'] = uri
-
-            if record.asset_observables:
-                result['targets'] = [
-                    {
-                        'type': 'endpoint',
-                        'observables': record.asset_observables,
-                        'observed_time': {'start_time': record.seen_time}
-                    }
-                ]
-
-            return result
-
         uri_list = assets_data.get('uri')
         uri = uri_list[0] if uri_list else None
 
@@ -127,7 +127,8 @@ class Mapping(metaclass=ABCMeta):
         asset_records.sort(key=lambda r: r.seen_time, reverse=True)
         asset_records = asset_records[:limit]
 
-        return [sighting(r) for r in asset_records]
+        return [self._sighting(r, asset_records_count, uri)
+                for r in asset_records]
 
     @staticmethod
     def get_observables(info):
@@ -135,7 +136,7 @@ class Mapping(metaclass=ABCMeta):
         from Chronicle {'type': 'value'} structures."""
 
         def ctr_type(chronicle_type, value):
-            # ToDo: confirm assetMacAddress, destinationIpAddress,
+            # ToDo: confirm assetMacAddress,
             #  hashMd5, hashSha1 hashSha256
             type_map = {
                 # assets types
@@ -252,6 +253,27 @@ class Domain(Mapping):
     @classmethod
     def type(cls):
         return 'domain'
+
+    def _sighting(self, record, raw_data_count, uri):
+        sighting = super()._sighting(record, raw_data_count, uri)
+
+        relations = []
+
+        for ob in sighting['observables']:
+            if ob != self.observable:
+                relations.append(
+                    {
+                        'origin': 'Chronicle Enrichment Module',
+                        'relation': 'Supra-domain_Of',
+                        'source': self.observable,
+                        'related': ob
+                    }
+                )
+
+        if relations:
+            sighting['relations'] = relations
+
+        return sighting
 
 
 class IP(Mapping):

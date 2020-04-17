@@ -12,7 +12,7 @@ from api.mappings import (
 def input_sets():
     TestData = namedtuple('TestData', 'file mapping')
     yield TestData('domain.json',
-                   Domain({'type': 'domain', 'value': 'cisco.com'}))
+                   Domain({'type': 'domain', 'value': 'google.com'}))
     yield TestData('ip.json', IP({'type': 'ip', 'value': '127.0.0.1'}))
     yield TestData('ipv6.json',
                    IPV6({'type': 'ipv6',

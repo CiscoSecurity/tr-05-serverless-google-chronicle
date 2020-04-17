@@ -8,13 +8,13 @@
           },
           "firstSeenArtifactInfo": {
             "artifactIndicator": {
-              "domainName": "www.cisco.com"
+              "domainName": "news.google.com"
             },
             "seenTime": "2018-10-10T12:28:19Z"
           },
           "lastSeenArtifactInfo": {
             "artifactIndicator": {
-              "domainName": "cisco.com"
+              "domainName": "google.com"
             },
             "seenTime": "2020-03-17T05:17:19Z"
           }
@@ -32,7 +32,7 @@
         "observables": [
           {
             "type": "domain",
-            "value": "cisco.com"
+            "value": "google.com"
           }
         ],
         "observed_time": {
@@ -65,7 +65,7 @@
         "observables": [
           {
             "type": "domain",
-            "value": "www.cisco.com"
+            "value": "news.google.com"
           }
         ],
         "observed_time": {
@@ -89,7 +89,15 @@
           }
         ],
         "title": "Found in Chronicle",
-        "type": "sighting"
+        "type": "sighting",
+        "relations": [
+          {
+            "origin": "Chronicle Enrichment Module",
+            "relation": "Supra-domain_Of",
+            "source": { "type": "domain", "value": "google.com"},
+            "related": {"type": "domain", "value": "news.google.com"}
+          }
+        ]
       }
     ]
   },
@@ -103,14 +111,6 @@
           },
           "rawSeverity": "High",
           "category": "Malware Command and Control Server",
-          "addresses": [
-            {
-              "port": [
-                80
-              ],
-              "domain": "cisco.com"
-            }
-          ],
           "firstActiveTime": "2020-03-18T00:00:00Z",
           "lastActiveTime": "2020-03-26T00:00:00Z"
         }
