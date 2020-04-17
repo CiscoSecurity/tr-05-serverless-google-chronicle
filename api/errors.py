@@ -1,4 +1,6 @@
 import json
+from http import HTTPStatus
+from json import JSONDecodeError
 
 INVALID_ARGUMENT = 'invalid argument'
 PERMISSION_DENIED = 'permission denied'
@@ -20,14 +22,33 @@ class TRFormattedError(Exception):
 
 
 class UnexpectedChronicleResponseError(TRFormattedError):
-    def __init__(self, payload):
-        error_payload = json.loads(payload).get('error', {})
+    def __init__(self, response, payload):
+        title = f"Unexpected response from Chronicle Backstory"
 
-        super().__init__(
-            error_payload.get('status', '').lower().replace('_', ' '),
-            error_payload.get('message', None)
-            or error_payload.get('details', None)
-        )
+        if response.status == HTTPStatus.INTERNAL_SERVER_ERROR:
+            super().__init__(UNKNOWN, f"{title}: {response.reason}")
+        else:
+
+            status_mapping = {
+                HTTPStatus.BAD_REQUEST: INVALID_ARGUMENT,
+                HTTPStatus.FORBIDDEN: PERMISSION_DENIED
+            }
+
+            error_payload = {}
+            try:
+                error_payload = json.loads(payload).get('error', {})
+            except JSONDecodeError:
+                pass
+
+            status = (status_mapping.get(response.status)
+                      or error_payload.get('status',
+                                           '').lower().replace('_', ' '))
+
+            message = (error_payload.get('message', None)
+                       or error_payload.get('details', None)
+                       or response.reason)
+
+            super().__init__(status, f"{title}: {message}")
 
 
 class InvalidJWTError(TRFormattedError):

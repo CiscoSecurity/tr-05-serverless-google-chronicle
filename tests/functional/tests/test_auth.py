@@ -27,6 +27,7 @@ def test_relay_auth_positive(relay_api):
         ('', 'Invalid Authorization Bearer JWT.'),
         ('123', 'Invalid Authorization Bearer JWT.'),
         (os.environ['ANOTHER_KEY'],
+         'Unexpected response from Chronicle Backstory: '
          'Backstory API has not been used in project ')
      )
 )

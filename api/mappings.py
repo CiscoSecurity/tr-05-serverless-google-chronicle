@@ -99,10 +99,12 @@ class Mapping(metaclass=ABCMeta):
                 'confidence': HIGH,
                 'internal': True,
                 'count': asset_records_count,
-                'source_uri': uri,
                 'observables': record.artifact_observables,
                 'observed_time': {'start_time': record.seen_time},
             }
+
+            if uri:
+                result['source_uri'] = uri
 
             if record.asset_observables:
                 result['targets'] = [
@@ -115,7 +117,9 @@ class Mapping(metaclass=ABCMeta):
 
             return result
 
-        uri = assets_data['uri'][0]
+        uri_list = assets_data.get('uri')
+        uri = uri_list[0] if uri_list else None
+
         asset_records = assets_data.get('assets', [])
         asset_records_count = len(asset_records)
 

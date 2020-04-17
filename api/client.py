@@ -53,7 +53,7 @@ class ChronicleClient:
         )
 
         if response.status != HTTPStatus.OK:
-            raise UnexpectedChronicleResponseError(body)
+            raise UnexpectedChronicleResponseError(response, body)
 
         return json.loads(body)
 
