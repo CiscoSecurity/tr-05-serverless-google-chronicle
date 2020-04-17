@@ -247,6 +247,15 @@ class Mapping(metaclass=ABCMeta):
 
         return UNKNOWN
 
+    @staticmethod
+    def observable_relation(relation_type, source, related):
+        return {
+            "origin": "Chronicle Enrichment Module",
+            "relation": relation_type,
+            "source": source,
+            "related": related
+        }
+
 
 class Domain(Mapping):
 
@@ -260,14 +269,14 @@ class Domain(Mapping):
         relations = []
 
         for ob in sighting['observables']:
+
             if ob != self.observable:
                 relations.append(
-                    {
-                        'origin': 'Chronicle Enrichment Module',
-                        'relation': 'Supra-domain_Of',
-                        'source': self.observable,
-                        'related': ob
-                    }
+                    self.observable_relation(
+                        'Supra-domain_Of',
+                        source=self.observable,
+                        related=ob
+                    )
                 )
 
         if relations:
@@ -300,36 +309,26 @@ class IP(Mapping):
 
         return ips
 
-    def resolved_domains_relationships(self):
-        def resolved_to(domain, ip_observable):
-            return {
-                "origin": "Chronicle Enrichment Module",
-                "relation": "Resolved_To",
-                "source": {
-                    "value": domain,
-                    "type": "domain"
-                },
-                "related": {
-                    "value": ip_observable['value'],
-                    "type": ip_observable['type']
-                }
-            }
+    def _sighting(self, record, raw_data_count, uri):
+        sighting = super()._sighting(record, raw_data_count, uri)
 
         resolved_domains = sorted(self.resolved_domains)
-        return [
-            resolved_to(domain, self.observable)
-            for domain in resolved_domains
-        ]
 
-    def extract_sightings(self, assets_data, limit):
-        sightings = super().extract_sightings(assets_data, limit)
-        relationships = self.resolved_domains_relationships()
+        relations = []
 
-        if sightings and relationships:
-            for sighting in sightings:
-                sighting['relations'] = relationships
+        for domain in resolved_domains:
+            relations.append(
+                self.observable_relation(
+                    "Resolved_To",
+                    source={"value": domain, "type": "domain"},
+                    related=self.observable
+                )
+            )
 
-        return sightings
+        if relations:
+            sighting['relations'] = relations
+
+        return sighting
 
 
 class IPV6(IP):
