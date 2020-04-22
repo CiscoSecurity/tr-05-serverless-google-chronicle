@@ -25,23 +25,6 @@
         },
         "firstSeenArtifactInfo": {
           "artifactIndicator": {
-            "assetIpAddress": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-          },
-          "seenTime": "2019-01-24T04:45:30Z"
-        },
-        "lastSeenArtifactInfo": {
-          "artifactIndicator": {
-            "assetIpAddress": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-          },
-          "seenTime": "2020-02-05T19:02:21Z"
-        }
-      },
-      {
-        "asset": {
-          "hostname": "ina-mackey-laptop"
-        },
-        "firstSeenArtifactInfo": {
-          "artifactIndicator": {
             "domainName": "somedomain.com"
           },
           "seenTime": "2019-02-24T04:45:30Z"
@@ -59,7 +42,7 @@
         },
         "firstSeenArtifactInfo": {
           "artifactIndicator": {
-            "domainName": "anotherdomain.com"
+            "domainName": "somedomain.com"
           },
           "seenTime": "2019-02-24T04:45:30Z"
         },
@@ -76,24 +59,104 @@
     ]
   },
     "output": [
-      {
-    "type": "sighting",
+  {
     "schema_version": "1.0.16",
-    "confidence": "High",
-    "count": 4,
+    "type": "sighting",
     "source": "Chronicle",
-    "source_uri": "uri",
-    "internal": true,
     "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
     "observables": [
       {
-        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-        "type": "ipv6"
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
       }
     ],
     "observed_time": {
       "start_time": "2020-03-05T19:02:21Z"
     },
+    "source_uri": "uri",
+    "targets": [
+      {
+        "type": "endpoint",
+        "observables": [
+          {
+            "value": "ina-mackey-laptop",
+            "type": "hostname"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2020-03-05T19:02:21Z"
+        }
+      }
+    ]
+  },
+  {
+    "schema_version": "1.0.16",
+    "type": "sighting",
+    "source": "Chronicle",
+    "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
+    "observables": [
+      {
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+      }
+    ],
+    "observed_time": {
+      "start_time": "2020-03-05T19:02:21Z"
+    },
+    "source_uri": "uri",
+    "targets": [
+      {
+        "type": "endpoint",
+        "observables": [
+          {
+            "value": "ina-mackey-laptop",
+            "type": "hostname"
+          }
+        ],
+        "observed_time": {
+          "start_time": "2020-03-05T19:02:21Z"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "origin": "Chronicle Enrichment Module",
+        "relation": "Resolved_To",
+        "source": {
+          "value": "somedomain.com",
+          "type": "domain"
+        },
+        "related": {
+          "type": "ipv6",
+          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+        }
+      }
+    ]
+  },
+  {
+    "schema_version": "1.0.16",
+    "type": "sighting",
+    "source": "Chronicle",
+    "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
+    "observables": [
+      {
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+      }
+    ],
+    "observed_time": {
+      "start_time": "2020-03-05T19:02:21Z"
+    },
+    "source_uri": "uri",
     "targets": [
       {
         "type": "endpoint",
@@ -117,42 +180,30 @@
           "type": "domain"
         },
         "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
-        }
-      },
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
-          "value": "somedomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
+          "type": "ipv6",
+          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
         }
       }
     ]
   },
-      {
-    "type": "sighting",
+  {
     "schema_version": "1.0.16",
-    "confidence": "High",
-    "count": 4,
+    "type": "sighting",
     "source": "Chronicle",
-    "source_uri": "uri",
-    "internal": true,
     "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
     "observables": [
       {
-        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-        "type": "ipv6"
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
       }
     ],
     "observed_time": {
-      "start_time": "2020-02-05T19:02:21Z"
+      "start_time": "2019-02-24T04:45:30Z"
     },
+    "source_uri": "uri",
     "targets": [
       {
         "type": "endpoint",
@@ -163,55 +214,29 @@
           }
         ],
         "observed_time": {
-          "start_time": "2020-02-05T19:02:21Z"
-        }
-      }
-    ],
-    "relations": [
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
-          "value": "anotherdomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
-        }
-      },
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
-          "value": "somedomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
+          "start_time": "2019-02-24T04:45:30Z"
         }
       }
     ]
   },
-      {
-    "type": "sighting",
+  {
     "schema_version": "1.0.16",
-    "confidence": "High",
-    "count": 4,
+    "type": "sighting",
     "source": "Chronicle",
-    "source_uri": "uri",
-    "internal": true,
     "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
     "observables": [
       {
-        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-        "type": "ipv6"
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
       }
     ],
     "observed_time": {
       "start_time": "2019-02-24T04:45:30Z"
     },
+    "source_uri": "uri",
     "targets": [
       {
         "type": "endpoint",
@@ -231,46 +256,34 @@
         "origin": "Chronicle Enrichment Module",
         "relation": "Resolved_To",
         "source": {
-          "value": "anotherdomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
-        }
-      },
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
           "value": "somedomain.com",
           "type": "domain"
         },
         "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
+          "type": "ipv6",
+          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
         }
       }
     ]
   },
-      {
-    "type": "sighting",
+  {
     "schema_version": "1.0.16",
-    "confidence": "High",
-    "count": 4,
+    "type": "sighting",
     "source": "Chronicle",
-    "source_uri": "uri",
-    "internal": true,
     "title": "Found in Chronicle",
+    "confidence": "High",
+    "internal": true,
+    "count": 3,
     "observables": [
       {
-        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-        "type": "ipv6"
+        "type": "ipv6",
+        "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
       }
     ],
     "observed_time": {
-      "start_time": "2019-01-24T04:45:30Z"
+      "start_time": "2019-02-24T04:45:30Z"
     },
+    "source_uri": "uri",
     "targets": [
       {
         "type": "endpoint",
@@ -281,7 +294,7 @@
           }
         ],
         "observed_time": {
-          "start_time": "2019-01-24T04:45:30Z"
+          "start_time": "2019-02-24T04:45:30Z"
         }
       }
     ],
@@ -290,24 +303,12 @@
         "origin": "Chronicle Enrichment Module",
         "relation": "Resolved_To",
         "source": {
-          "value": "anotherdomain.com",
-          "type": "domain"
-        },
-        "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
-        }
-      },
-      {
-        "origin": "Chronicle Enrichment Module",
-        "relation": "Resolved_To",
-        "source": {
           "value": "somedomain.com",
           "type": "domain"
         },
         "related": {
-          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-          "type": "ipv6"
+          "type": "ipv6",
+          "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
         }
       }
     ]

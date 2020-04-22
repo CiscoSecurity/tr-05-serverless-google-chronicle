@@ -76,9 +76,11 @@ class Mapping(metaclass=ABCMeta):
             if last_artifact and last_artifact != first_artifact:
                 to_add = (first_artifact, last_artifact)
 
-            asset_observables = self.get_observables(record['asset'])
+            asset_observables = self.map_observables(record['asset'])
             for artifact in to_add:
-                artifact_observables = self.artifact_observables(artifact)
+                artifact_observables = self.artifact_observables_filter(
+                    self.map_observables(artifact['artifactIndicator'])
+                )
                 if artifact_observables:
                     results.append(
                         self.FlattenAssertRecord(asset_observables,
@@ -131,7 +133,7 @@ class Mapping(metaclass=ABCMeta):
                 for r in asset_records]
 
     @staticmethod
-    def get_observables(info):
+    def map_observables(info):
         """Retrieves CTR observables list
         from Chronicle {'type': 'value'} structures."""
 
@@ -166,9 +168,8 @@ class Mapping(metaclass=ABCMeta):
 
         return observables
 
-    def artifact_observables(self, artifact):
-        """Retrieves CTR observables list from Chronicle Artifact."""
-        return self.get_observables(artifact['artifactIndicator'])
+    def artifact_observables_filter(self, observables):
+        return [self.observable] if self.observable in observables else []
 
     def extract_indicators(self, ioc_details, limit):
         def indicator(source):
@@ -263,6 +264,9 @@ class Domain(Mapping):
     def type(cls):
         return 'domain'
 
+    def artifact_observables_filter(self, observables):
+        return [ob for ob in observables if ob['type'] == self.type()]
+
     def _sighting(self, record, raw_data_count, uri):
         sighting = super()._sighting(record, raw_data_count, uri)
 
@@ -295,38 +299,30 @@ class IP(Mapping):
     def type(cls):
         return 'ip'
 
-    def artifact_observables(self, artifact):
-        """ Chronicle returns assets for resolved domains in
-            response for ips, so we need to separate it. """
-        ips = []
-        initial_observables = super().artifact_observables(artifact)
-
-        for ob in initial_observables:
-            if ob['type'] == self.type():
-                ips.append(ob)
-            elif ob['type'] == 'domain':
-                self.resolved_domains.add(ob['value'])
-
-        return ips
+    def artifact_observables_filter(self, observables):
+        result = [ob for ob in observables if ob['type'] == Domain.type()]
+        if self.observable in observables:
+            result.append(self.observable)
+        return result
 
     def _sighting(self, record, raw_data_count, uri):
         sighting = super()._sighting(record, raw_data_count, uri)
 
-        resolved_domains = sorted(self.resolved_domains)
-
         relations = []
+        for ob in sighting['observables']:
 
-        for domain in resolved_domains:
-            relations.append(
-                self.observable_relation(
-                    "Resolved_To",
-                    source={"value": domain, "type": "domain"},
-                    related=self.observable
+            if ob['type'] == 'domain':
+                relations.append(
+                    self.observable_relation(
+                        "Resolved_To",
+                        source=ob,
+                        related=self.observable
+                    )
                 )
-            )
 
         if relations:
             sighting['relations'] = relations
+            sighting['observables'] = [self.observable]
 
         return sighting
 
