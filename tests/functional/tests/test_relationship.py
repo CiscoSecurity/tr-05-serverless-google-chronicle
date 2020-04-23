@@ -20,7 +20,7 @@ def test_positive_relationship_domain(module_headers):
 
     Importance: Critical
     """
-    observable = {'type': 'domain', 'value': 'sipapals.servehalflife.com'}
+    observable = {'type': 'domain', 'value': 'avira.com'}
     response = enrich_observe_observables(
         payload=[observable],
         **{'headers': module_headers}
@@ -30,10 +30,10 @@ def test_positive_relationship_domain(module_headers):
     assert module_response['indicators']['count'] == 1
     indicator = module_response['indicators']['docs'][0]
     # Get any random sighting as we have only one indicator to be connected to
-    assert module_response['sightings']['count'] == 2
+    assert module_response['sightings']['count'] == 100
     sighting = random.choice(module_response['sightings']['docs'])
     # Check that we have (sightings*indicators) number of relationships
-    assert module_response['relationships']['count'] == 2
+    assert module_response['relationships']['count'] == 100
     # Validate that entities are connected
     relationship = [
         d for d
