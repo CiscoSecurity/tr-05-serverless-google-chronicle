@@ -169,6 +169,8 @@ class Mapping(metaclass=ABCMeta):
         return observables
 
     def artifact_observables_filter(self, observables):
+        # Chronicle response may have data for observables that are different
+        # from the one we queried for. In general case - skip such data.
         return [self.observable] if self.observable in observables else []
 
     def extract_indicators(self, ioc_details, limit):
@@ -265,6 +267,10 @@ class Domain(Mapping):
         return 'domain'
 
     def artifact_observables_filter(self, observables):
+        # If queried observable is a domain and response has different domains,
+        # that domains must be treated as subdomains: that data must be used
+        # for the creation of sighting with 'Supra-domain_Of' relation
+        # and original subdomain as an observable.
         return [ob for ob in observables if ob['type'] == self.type()]
 
     def _sighting(self, record, raw_data_count, uri):
@@ -300,6 +306,9 @@ class IP(Mapping):
         return 'ip'
 
     def artifact_observables_filter(self, observables):
+        # If queried observable is an IP and response has domains,
+        # that data must be used for the creation of sighting with
+        # 'Resolved_To' relation and original IP observable as an observable.
         result = [ob for ob in observables if ob['type'] == Domain.type()]
         if self.observable in observables:
             result.append(self.observable)
