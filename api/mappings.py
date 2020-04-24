@@ -270,7 +270,7 @@ class Domain(Mapping):
         # If queried observable is a domain and response has different domains,
         # that domains must be treated as subdomains: that data must be used
         # for the creation of sighting with 'Supra-domain_Of' relation
-        # and original subdomain as an observable.
+        # and a subdomain as an observable.
         return [ob for ob in observables if ob['type'] == self.type()]
 
     def _sighting(self, record, raw_data_count, uri):
