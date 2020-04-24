@@ -76,9 +76,11 @@ class Mapping(metaclass=ABCMeta):
             if last_artifact and last_artifact != first_artifact:
                 to_add = (first_artifact, last_artifact)
 
-            asset_observables = self.get_observables(record['asset'])
+            asset_observables = self.map_observables(record['asset'])
             for artifact in to_add:
-                artifact_observables = self.artifact_observables(artifact)
+                artifact_observables = self.artifact_observables_filter(
+                    self.map_observables(artifact['artifactIndicator'])
+                )
                 if artifact_observables:
                     results.append(
                         self.FlattenAssertRecord(asset_observables,
@@ -88,35 +90,35 @@ class Mapping(metaclass=ABCMeta):
 
         return results
 
+    def _sighting(self, record, raw_data_count, uri):
+        result = {
+            **CTIM_DEFAULTS,
+            'id': f'transient:{uuid4()}',
+            'type': 'sighting',
+            'source': 'Chronicle',
+            'title': 'Found in Chronicle',
+            'confidence': HIGH,
+            'internal': True,
+            'count': raw_data_count,
+            'observables': record.artifact_observables,
+            'observed_time': {'start_time': record.seen_time},
+        }
+
+        if uri:
+            result['source_uri'] = uri
+
+        if record.asset_observables:
+            result['targets'] = [
+                {
+                    'type': 'endpoint',
+                    'observables': record.asset_observables,
+                    'observed_time': {'start_time': record.seen_time}
+                }
+            ]
+
+        return result
+
     def extract_sightings(self, assets_data, limit):
-        def sighting(record):
-            result = {
-                **CTIM_DEFAULTS,
-                'id': f'transient:{uuid4()}',
-                'type': 'sighting',
-                'source': 'Chronicle',
-                'title': 'Found in Chronicle',
-                'confidence': HIGH,
-                'internal': True,
-                'count': asset_records_count,
-                'observables': record.artifact_observables,
-                'observed_time': {'start_time': record.seen_time},
-            }
-
-            if uri:
-                result['source_uri'] = uri
-
-            if record.asset_observables:
-                result['targets'] = [
-                    {
-                        'type': 'endpoint',
-                        'observables': record.asset_observables,
-                        'observed_time': {'start_time': record.seen_time}
-                    }
-                ]
-
-            return result
-
         uri_list = assets_data.get('uri')
         uri = uri_list[0] if uri_list else None
 
@@ -127,15 +129,16 @@ class Mapping(metaclass=ABCMeta):
         asset_records.sort(key=lambda r: r.seen_time, reverse=True)
         asset_records = asset_records[:limit]
 
-        return [sighting(r) for r in asset_records]
+        return [self._sighting(r, asset_records_count, uri)
+                for r in asset_records]
 
     @staticmethod
-    def get_observables(info):
+    def map_observables(info):
         """Retrieves CTR observables list
         from Chronicle {'type': 'value'} structures."""
 
         def ctr_type(chronicle_type, value):
-            # ToDo: confirm assetMacAddress, destinationIpAddress,
+            # ToDo: confirm assetMacAddress,
             #  hashMd5, hashSha1 hashSha256
             type_map = {
                 # assets types
@@ -165,9 +168,10 @@ class Mapping(metaclass=ABCMeta):
 
         return observables
 
-    def artifact_observables(self, artifact):
-        """Retrieves CTR observables list from Chronicle Artifact."""
-        return self.get_observables(artifact['artifactIndicator'])
+    def artifact_observables_filter(self, observables):
+        # Chronicle response may have data for observables that are different
+        # from the one we queried for. In general case - skip such data.
+        return [self.observable] if self.observable in observables else []
 
     def extract_indicators(self, ioc_details, limit):
         def indicator(source):
@@ -246,12 +250,49 @@ class Mapping(metaclass=ABCMeta):
 
         return UNKNOWN
 
+    @staticmethod
+    def observable_relation(relation_type, source, related):
+        return {
+            "origin": "Chronicle Enrichment Module",
+            "relation": relation_type,
+            "source": source,
+            "related": related
+        }
+
 
 class Domain(Mapping):
 
     @classmethod
     def type(cls):
         return 'domain'
+
+    def artifact_observables_filter(self, observables):
+        # If queried observable is a domain and response has different domains,
+        # that domains must be treated as subdomains: that data must be used
+        # for the creation of sighting with 'Supra-domain_Of' relation
+        # and original subdomain as an observable.
+        return [ob for ob in observables if ob['type'] == self.type()]
+
+    def _sighting(self, record, raw_data_count, uri):
+        sighting = super()._sighting(record, raw_data_count, uri)
+
+        relations = []
+
+        for ob in sighting['observables']:
+
+            if ob != self.observable:
+                relations.append(
+                    self.observable_relation(
+                        'Supra-domain_Of',
+                        source=self.observable,
+                        related=ob
+                    )
+                )
+
+        if relations:
+            sighting['relations'] = relations
+
+        return sighting
 
 
 class IP(Mapping):
@@ -264,50 +305,35 @@ class IP(Mapping):
     def type(cls):
         return 'ip'
 
-    def artifact_observables(self, artifact):
-        """ Chronicle returns assets for resolved domains in
-            response for ips, so we need to separate it. """
-        ips = []
-        initial_observables = super().artifact_observables(artifact)
+    def artifact_observables_filter(self, observables):
+        # If queried observable is an IP and response has domains,
+        # that data must be used for the creation of sighting with
+        # 'Resolved_To' relation and original IP observable as an observable.
+        result = [ob for ob in observables if ob['type'] == Domain.type()]
+        if self.observable in observables:
+            result.append(self.observable)
+        return result
 
-        for ob in initial_observables:
-            if ob['type'] == self.type():
-                ips.append(ob)
-            elif ob['type'] == 'domain':
-                self.resolved_domains.add(ob['value'])
+    def _sighting(self, record, raw_data_count, uri):
+        sighting = super()._sighting(record, raw_data_count, uri)
 
-        return ips
+        relations = []
+        for ob in sighting['observables']:
 
-    def resolved_domains_relationships(self):
-        def resolved_to(domain, ip_observable):
-            return {
-                "origin": "Chronicle Enrichment Module",
-                "relation": "Resolved_To",
-                "source": {
-                    "value": domain,
-                    "type": "domain"
-                },
-                "related": {
-                    "value": ip_observable['value'],
-                    "type": ip_observable['type']
-                }
-            }
+            if ob['type'] == 'domain':
+                relations.append(
+                    self.observable_relation(
+                        "Resolved_To",
+                        source=ob,
+                        related=self.observable
+                    )
+                )
 
-        resolved_domains = sorted(self.resolved_domains)
-        return [
-            resolved_to(domain, self.observable)
-            for domain in resolved_domains
-        ]
+        if relations:
+            sighting['relations'] = relations
+            sighting['observables'] = [self.observable]
 
-    def extract_sightings(self, assets_data, limit):
-        sightings = super().extract_sightings(assets_data, limit)
-        relationships = self.resolved_domains_relationships()
-
-        if sightings and relationships:
-            for sighting in sightings:
-                sighting['relations'] = relationships
-
-        return sightings
+        return sighting
 
 
 class IPV6(IP):
