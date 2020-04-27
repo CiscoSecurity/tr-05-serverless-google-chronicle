@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 from flask import current_app
 
@@ -16,7 +17,8 @@ class ChronicleClient:
         self.client = client
         self.base_url = base_url
 
-    def _artifact_filter(self, observable):
+    @staticmethod
+    def _artifact_filter(observable):
         type_mapping = {
             'ip': 'destination_ip_address',
             'ipv6': 'destination_ip_address',
@@ -30,10 +32,26 @@ class ChronicleClient:
         if artifact_type is None:
             raise UnsupportedArtifactTypeError(observable["type"])
 
-        return f'artifact.{artifact_type}={observable["value"]}'
+        args = {f'artifact.{artifact_type}': observable["value"]}
+        return urlencode(args)
+
+    @staticmethod
+    def _time_filter(number_of_days_to_filter):
+        def format_time_to_arg(input_datetime):
+            return f'{input_datetime.isoformat(timespec="seconds")}Z'
+
+        end = datetime.utcnow()
+        delta = timedelta(number_of_days_to_filter)
+        start = end - delta
+
+        return (f'&start_time={format_time_to_arg(start)}'
+                f'&end_time={format_time_to_arg(end)}')
 
     def _request_chronicle(self, path, observable,
-                           time_filter=None, page_size=None):
+                           number_of_days_to_filter=None, page_size=None):
+
+        time_filter = (self._time_filter(number_of_days_to_filter)
+                       if number_of_days_to_filter is not None else '')
 
         page_size_filter = ("&page_size=" + str(page_size)
                             if page_size is not None else '')
@@ -41,8 +59,8 @@ class ChronicleClient:
         url = join_url(
             self.base_url,
             f'{path}?{self._artifact_filter(observable)}'
-            f'{str(time_filter or "")}'
-            f'{page_size_filter or ""}'
+            f'{time_filter}'
+            f'{page_size_filter}'
         )
 
         response, body = self.client.request(
@@ -57,37 +75,13 @@ class ChronicleClient:
 
         return json.loads(body)
 
-    def list_assets(self, observable, page_size=None):
-        return self._request_chronicle(
-            '/artifact/listassets', observable, TimeFilter(), page_size
-        )
+    def list_assets(self, observable, number_of_days_to_filter,
+                    page_size=None):
+        return self._request_chronicle('/artifact/listassets', observable,
+                                       number_of_days_to_filter, page_size)
 
     def list_ioc_details(self, observable):
         allowed_types = ('domain', 'ip', 'ipv6')
         if observable['type'] not in allowed_types:
             return {}
         return self._request_chronicle('artifact/listiocdetails', observable)
-
-
-class TimeFilter:
-    def __init__(self):
-        self.end = datetime.utcnow()
-        delta = timedelta(
-            days=current_app.config[
-                'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
-            ]
-        )
-        self.start = self.end - delta
-
-    @staticmethod
-    def format_time_to_arg(input_datetime):
-        """
-           Converts datetime to yyyy-MM-dd'T'HH:mm:ss'Z' format
-           acceptable by Chronicle Backstory API
-
-        """
-        return f'{input_datetime.isoformat(timespec="seconds")}Z'
-
-    def __str__(self):
-        return (f'&start_time={self.format_time_to_arg(self.start)}'
-                f'&end_time={self.format_time_to_arg(self.end)}')
