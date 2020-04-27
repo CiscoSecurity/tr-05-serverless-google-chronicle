@@ -16,7 +16,7 @@ app.register_blueprint(enrich_api)
 app.register_blueprint(respond_api)
 
 
-app.errorhandler(Exception)
+@app.errorhandler(Exception)
 def handle_error(exception):
     code = getattr(exception, 'code', 500)
     message = getattr(exception, 'description', 'Something went wrong.')
