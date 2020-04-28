@@ -30,6 +30,9 @@ def observe_observables():
 
     observables = get_observables()
     limit = current_app.config['CTR_ENTITIES_LIMIT']
+    time_delta = current_app.config[
+        'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
+    ]
 
     sightings = []
     indicators = []
@@ -40,7 +43,7 @@ def observe_observables():
         mapping = Mapping.for_(x)
 
         if mapping:
-            assets_data = chronicle_client.list_assets(x, limit)
+            assets_data = chronicle_client.list_assets(x, time_delta, limit)
             ioc_details = chronicle_client.list_ioc_details(x)
 
             x_sightings = mapping.extract_sightings(assets_data, limit)

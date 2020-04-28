@@ -16,7 +16,12 @@ def health():
     chronicle_client = ChronicleClient(current_app.config['API_URL'],
                                        http_client)
 
-    _ = chronicle_client.list_assets({'type': 'domain',
-                                      'value': 'www.google.com'})
+    time_delta = current_app.config[
+        'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
+    ]
+
+    _ = chronicle_client.list_assets(
+        {'type': 'domain', 'value': 'www.google.com'}, time_delta
+    )
 
     return jsonify_data({'status': 'ok'})
