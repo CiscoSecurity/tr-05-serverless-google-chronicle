@@ -76,6 +76,51 @@ def test_enrich_call_with_unauthorized_creds_failure(
         assert response.json == unauthorized_creds_expected_payload
 
 
+def test_enrich_call_with_too_many_requests_failure(
+        route, client, valid_jwt, valid_json,
+        chronicle_client_too_many_requests,
+        too_many_requests_expected_payload
+):
+    with patch('api.utils._auth.authorized_http',
+               return_value=chronicle_client_too_many_requests), \
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
+        response = client.post(route, headers=headers(valid_jwt),
+                               json=valid_json)
+
+        assert response.json == too_many_requests_expected_payload
+
+
+def test_enrich_call_with_internal_error_failure(
+        route, client, valid_jwt, valid_json,
+        chronicle_client_internal_error,
+        internal_server_error_expected_payload
+):
+    with patch('api.utils._auth.authorized_http',
+               return_value=chronicle_client_internal_error), \
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
+        response = client.post(route, headers=headers(valid_jwt),
+                               json=valid_json)
+
+        assert response.json == internal_server_error_expected_payload
+
+
+def test_enrich_call_with_bad_request_failure(
+        route, client, valid_jwt, valid_json,
+        chronicle_client_bad_request,
+        bad_request_expected_payload
+):
+    with patch('api.utils._auth.authorized_http',
+               return_value=chronicle_client_bad_request), \
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
+        response = client.post(route, headers=headers(valid_jwt),
+                               json=valid_json)
+
+        assert response.json == bad_request_expected_payload
+
+
 def test_enrich_call_success(
         route, client, valid_jwt, valid_json, chronicle_client_ok
 ):
