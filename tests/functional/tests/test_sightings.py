@@ -36,13 +36,20 @@ def test_positive_sighting_domain(module_headers):
         assert sighting['source'] == 'Chronicle'
         assert sighting['title'] == 'Found in Chronicle'
         assert len(sighting['observables']) == 1
-        assert sighting['observables'][0]['value'].endswith('google.com')
-        assert sighting['observables'][0]['type'] == 'domain'
 
         for target in sighting['targets']:
             assert target['type'] == 'endpoint'
             assert target['observables'][0]['type'] == 'hostname'
             assert 'start_time' in target['observed_time']
+
+        # Here observables are presented by subdomains
+        assert sighting['observables'][0]['value'].endswith('google.com')
+        assert sighting['observables'][0]['type'] == 'domain'
+
+        # For subdomains There is field relations
+        # where observable with its subdomain are linked
+        # if received observable equals searched observable
+        # there is not field relations
         if sighting['observables'][0]['value'] != 'google.com':
             assert len(sighting['relations']) == 1
             relation = sighting['relations'][0]
