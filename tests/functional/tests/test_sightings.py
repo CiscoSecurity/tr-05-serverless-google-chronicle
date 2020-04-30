@@ -9,7 +9,7 @@ def test_positive_sighting_domain(module_headers):
     ID: CCTRI-883-13cda7fd-1357-4621-98f6-a0dd3789c3cf
 
     Steps:
-        1. Send request to enrich deliberate observable endpoint
+        1. Send request to enrich observe observable endpoint
 
     Expectedresults:
         1. Check that data in response body contains expected sightings for
@@ -60,7 +60,7 @@ def test_positive_sighting_ip(module_headers):
     ID: CCTRI-883-33cda5fd-1557-4625-98f5-a0dd3589c35a
 
     Steps:
-        1. Send request to enrich deliberate observable endpoint
+        1. Send request to enrich observe observable endpoint
 
     Expectedresults:
         1. Check that data in response body contains expected sightings for
