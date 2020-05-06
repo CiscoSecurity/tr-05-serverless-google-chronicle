@@ -5,7 +5,7 @@ from json import JSONDecodeError
 INVALID_ARGUMENT = 'invalid argument'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
-TOO_MANY_REQUESTS = 'to many requests'
+TOO_MANY_REQUESTS = 'too many requests'
 
 
 class TRFormattedError(Exception):
