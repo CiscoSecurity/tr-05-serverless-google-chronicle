@@ -5,7 +5,7 @@ from json import JSONDecodeError
 INVALID_ARGUMENT = 'invalid argument'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
-TOO_MANY_REQUESTS = 'to many requests'
+TOO_MANY_REQUESTS = 'too many requests'
 
 
 class TRFormattedError(Exception):
@@ -32,7 +32,7 @@ class UnexpectedChronicleResponseError(TRFormattedError):
         elif response.status == HTTPStatus.TOO_MANY_REQUESTS:
             super().__init__(
                 TOO_MANY_REQUESTS,
-                "To many requests to Chronicle Backstory have been made. "
+                "Too many requests to Chronicle Backstory have been made. "
                 "Please, try again later."
             )
 

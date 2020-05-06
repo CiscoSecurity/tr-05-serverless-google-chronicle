@@ -222,7 +222,7 @@ def too_many_requests_expected_payload(route, client):
     if route.endswith('/observe/observables'):
         return {'errors': [
             {'code': TOO_MANY_REQUESTS,
-             'message': 'To many requests to Chronicle Backstory'
+             'message': 'Too many requests to Chronicle Backstory'
                         ' have been made. Please, try again later.',
              'type': 'fatal'}
         ]}
