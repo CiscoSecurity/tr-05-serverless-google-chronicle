@@ -32,7 +32,7 @@ class UnexpectedChronicleResponseError(TRFormattedError):
         elif response.status == HTTPStatus.TOO_MANY_REQUESTS:
             super().__init__(
                 TOO_MANY_REQUESTS,
-                "To many requests to Chronicle Backstory have been made. "
+                "Too many requests to Chronicle Backstory have been made. "
                 "Please, try again later."
             )
 
