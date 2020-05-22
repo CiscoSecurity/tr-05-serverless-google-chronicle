@@ -24,7 +24,7 @@ class TRFormattedError(Exception):
 
 class UnexpectedChronicleResponseError(TRFormattedError):
     def __init__(self, response, payload):
-        title = f"Unexpected response from Chronicle Backstory"
+        title = "Unexpected response from Chronicle Backstory"
 
         if response.status == HTTPStatus.INTERNAL_SERVER_ERROR:
             super().__init__(UNKNOWN, f"{title}: {response.reason}")
