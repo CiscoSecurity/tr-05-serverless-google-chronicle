@@ -24,7 +24,7 @@ def test_positive_sighting_domain(module_headers):
     )
     sightings = get_observables(
         response['data'], 'Chronicle Backstory')['data']['sightings']
-    assert sightings['count'] == 100
+    assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
         assert sighting['confidence'] == 'High'
@@ -59,6 +59,8 @@ def test_positive_sighting_domain(module_headers):
             assert 'value' in relation['related']
             assert 'type' in relation['related']
 
+    assert sightings['count'] == len(sightings['docs'])
+
 
 def test_positive_sighting_ip(module_headers):
     """Perform testing for enrich observe observables endpoint to get
@@ -82,7 +84,7 @@ def test_positive_sighting_ip(module_headers):
     )
     sightings = get_observables(
         response['data'], 'Chronicle Backstory')['data']['sightings']
-    assert sightings['count'] == 100
+    assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
         assert sighting['confidence'] == 'High'
@@ -109,6 +111,8 @@ def test_positive_sighting_ip(module_headers):
         assert 'value' in relation['source']
         assert 'type' in relation['source']
 
+    assert sightings['count'] == len(sightings['docs'])
+
 
 def test_positive_sighting_hash(module_headers):
     """Perform testing for enrich observe observables endpoint to get
@@ -132,7 +136,7 @@ def test_positive_sighting_hash(module_headers):
     )
     sightings = get_observables(
         response['data'], 'Chronicle Backstory')['data']['sightings']
-    assert sightings['count'] == 10
+    assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
         assert sighting['confidence'] == 'High'
@@ -150,3 +154,5 @@ def test_positive_sighting_hash(module_headers):
             assert target['type'] == 'endpoint'
             assert target['observables'][0]['type'] == 'hostname'
             assert 'start_time' in target['observed_time']
+
+    assert sightings['count'] == len(sightings['docs'])
