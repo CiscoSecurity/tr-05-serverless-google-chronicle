@@ -73,8 +73,10 @@ def chronicle_client_too_many_requests():
                 {'code': TOO_MANY_REQUESTS,
                  'message': 'generic::resource_exhausted: insufficient '
                             'ListArtifactAssets quota for 000000demo-dev',
-                 'status': 'RESOURCE_EXHAUSTED'}
-             }
+                 'status': 'RESOURCE_EXHAUSTED'},
+             'data': {}
+             },
+
         )
     )
 
@@ -154,7 +156,8 @@ def invalid_jwt_expected_payload(route):
                 {'code': PERMISSION_DENIED,
                  'message': 'Invalid Authorization Bearer JWT.',
                  'type': 'fatal'}
-            ]
+            ],
+            'data': {}
         }
 
     if route.endswith('/deliberate/observables'):
@@ -173,7 +176,8 @@ def unauthorized_creds_expected_payload(route):
                  'message': ("Unexpected response from Chronicle Backstory: "
                              "Wrong creds!"),
                  'type': 'fatal'}
-            ]
+            ],
+            'data': {}
         }
 
     if route.endswith('/deliberate/observables'):
@@ -192,7 +196,8 @@ def invalid_creds_expected_payload(route):
                  'message': ('Chronicle Backstory Authorization failed:'
                              ' Wrong structure.'),
                  'type': 'fatal'}
-            ]
+            ],
+            'data': {}
         }
 
     if route.endswith('/deliberate/observables'):
@@ -209,7 +214,9 @@ def invalid_json_expected_payload(route, client):
             {'code': INVALID_ARGUMENT,
              'message': "{0: {'value': ['Missing data for required field.']}}",
              'type': 'fatal'}
-        ]}
+        ],
+            'data': {}
+        }
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
@@ -225,7 +232,9 @@ def too_many_requests_expected_payload(route, client):
              'message': 'Too many requests to Chronicle Backstory'
                         ' have been made. Please, try again later.',
              'type': 'fatal'}
-        ]}
+        ],
+            'data': {}
+        }
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
@@ -241,7 +250,9 @@ def internal_server_error_expected_payload(route, client):
              'message': 'Unexpected response from Chronicle Backstory:'
                         ' Internal Server Error',
              'type': 'fatal'}
-        ]}
+        ],
+            'data': {}
+        }
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
@@ -257,7 +268,9 @@ def bad_request_expected_payload(route, client):
              'message': 'Unexpected response from Chronicle Backstory:'
                         ' BAD REQUEST',
              'type': 'fatal'}
-        ]}
+        ],
+            'data': {}
+        }
 
     if route.endswith('/deliberate/observables'):
         return {'data': {}}
