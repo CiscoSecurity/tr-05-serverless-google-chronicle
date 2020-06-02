@@ -255,15 +255,4 @@ def internal_server_error_expected_payload(route, client):
 
 @fixture(scope='module')
 def bad_request_expected_payload(route, client):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': INVALID_ARGUMENT,
-                 'message': 'Unexpected response from Chronicle Backstory:'
-                            ' BAD REQUEST',
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
+    return expected_payload(route, {'data': {}})

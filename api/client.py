@@ -75,8 +75,8 @@ class ChronicleClient:
         if response.status == HTTPStatus.OK:
             return json.loads(body)
 
-        if response.status_code in NOT_CRITICAL_ERRORS:
-            return []
+        if response.status in NOT_CRITICAL_ERRORS:
+            return {}
 
         raise UnexpectedChronicleResponseError(response, body)
 

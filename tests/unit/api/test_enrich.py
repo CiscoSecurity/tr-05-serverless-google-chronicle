@@ -106,7 +106,7 @@ def test_enrich_call_with_internal_error_failure(
         assert response.json == internal_server_error_expected_payload
 
 
-def test_enrich_call_with_bad_request_failure(
+def test_enrich_call_with_bad_request_success(
         route, client, valid_jwt, valid_json,
         chronicle_client_bad_request,
         bad_request_expected_payload
