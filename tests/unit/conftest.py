@@ -56,10 +56,10 @@ def chronicle_client_internal_error():
         HTTPStatus.INTERNAL_SERVER_ERROR,
         json.dumps(
             {'error':
-                {'code': HTTPStatus.INTERNAL_SERVER_ERROR,
-                 'message': 'generic::internal: internal error, '
-                            'please try again later',
-                 'status': 'INTERNAL'}}),
+                 {'code': HTTPStatus.INTERNAL_SERVER_ERROR,
+                  'message': 'generic::internal: internal error, '
+                             'please try again later',
+                  'status': 'INTERNAL'}}),
         reason='Internal Server Error'
     )
 
@@ -70,10 +70,10 @@ def chronicle_client_too_many_requests():
         HTTPStatus.TOO_MANY_REQUESTS,
         json.dumps(
             {'error':
-                {'code': TOO_MANY_REQUESTS,
-                 'message': 'generic::resource_exhausted: insufficient '
-                            'ListArtifactAssets quota for 000000demo-dev',
-                 'status': 'RESOURCE_EXHAUSTED'},
+                 {'code': TOO_MANY_REQUESTS,
+                  'message': 'generic::resource_exhausted: insufficient '
+                             'ListArtifactAssets quota for 000000demo-dev',
+                  'status': 'RESOURCE_EXHAUSTED'},
              'data': {}
              },
 
@@ -148,10 +148,21 @@ def invalid_jwt(valid_jwt, secret_key):
     return '.'.join([header, payload, signature])
 
 
+def expected_payload(r, body):
+    if r.endswith('/deliberate/observables'):
+        return {'data': {}}
+
+    if r.endswith('/refer/observables'):
+        return {'data': []}
+
+    return body
+
+
 @fixture(scope='module')
 def invalid_jwt_expected_payload(route):
-    if route in ('/observe/observables', '/health'):
-        return {
+    return expected_payload(
+        route,
+        {
             'errors': [
                 {'code': PERMISSION_DENIED,
                  'message': 'Invalid Authorization Bearer JWT.',
@@ -159,18 +170,14 @@ def invalid_jwt_expected_payload(route):
             ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    if route.endswith('/refer/observables'):
-        return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def unauthorized_creds_expected_payload(route):
-    if route in ('/observe/observables', '/health'):
-        return {
+    return expected_payload(
+        route,
+        {
             'errors': [
                 {'code': PERMISSION_DENIED,
                  'message': ("Unexpected response from Chronicle Backstory: "
@@ -179,18 +186,14 @@ def unauthorized_creds_expected_payload(route):
             ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    if route.endswith('/refer/observables'):
-        return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def invalid_creds_expected_payload(route):
-    if route in ('/observe/observables', '/health'):
-        return {
+    return expected_payload(
+        route,
+        {
             'errors': [
                 {'code': PERMISSION_DENIED,
                  'message': ('Chronicle Backstory Authorization failed:'
@@ -199,80 +202,68 @@ def invalid_creds_expected_payload(route):
             ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    if route.endswith('/refer/observables'):
-        return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def invalid_json_expected_payload(route, client):
-    if route.endswith('/observe/observables'):
-        return {'errors': [
-            {'code': INVALID_ARGUMENT,
-             'message': "{0: {'value': ['Missing data for required field.']}}",
-             'type': 'fatal'}
-        ],
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {'code': INVALID_ARGUMENT,
+                 'message': ("{0: {'value': "
+                             "['Missing data for required field.']}}"),
+                 'type': 'fatal'}
+            ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def too_many_requests_expected_payload(route, client):
-    if route.endswith('/observe/observables'):
-        return {'errors': [
-            {'code': TOO_MANY_REQUESTS,
-             'message': 'Too many requests to Chronicle Backstory'
-                        ' have been made. Please, try again later.',
-             'type': 'fatal'}
-        ],
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {'code': TOO_MANY_REQUESTS,
+                 'message': 'Too many requests to Chronicle Backstory'
+                            ' have been made. Please, try again later.',
+                 'type': 'fatal'}
+            ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def internal_server_error_expected_payload(route, client):
-    if route.endswith('/observe/observables'):
-        return {'errors': [
-            {'code': UNKNOWN,
-             'message': 'Unexpected response from Chronicle Backstory:'
-                        ' Internal Server Error',
-             'type': 'fatal'}
-        ],
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {'code': UNKNOWN,
+                 'message': 'Unexpected response from Chronicle Backstory:'
+                            ' Internal Server Error',
+                 'type': 'fatal'}
+            ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    return {'data': []}
+    )
 
 
 @fixture(scope='module')
 def bad_request_expected_payload(route, client):
-    if route.endswith('/observe/observables'):
-        return {'errors': [
-            {'code': INVALID_ARGUMENT,
-             'message': 'Unexpected response from Chronicle Backstory:'
-                        ' BAD REQUEST',
-             'type': 'fatal'}
-        ],
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {'code': INVALID_ARGUMENT,
+                 'message': 'Unexpected response from Chronicle Backstory:'
+                            ' BAD REQUEST',
+                 'type': 'fatal'}
+            ],
             'data': {}
         }
-
-    if route.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    return {'data': []}
+    )
