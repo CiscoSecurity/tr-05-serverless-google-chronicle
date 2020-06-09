@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from pytest import fixture
 
@@ -35,13 +35,16 @@ def test_health_call_with_invalid_jwt_failure(
 
 def test_health_call_with_unauthorized_creds_failure(
         route, client, valid_jwt,
-        chronicle_client_unauthorized_creds,
+        chronicle_response_unauthorized_creds,
         unauthorized_creds_expected_payload,
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_unauthorized_creds), \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        client_mock = MagicMock()
+        client_mock.request.return_value = chronicle_response_unauthorized_creds
+        authorized_http_mock.return_value = client_mock
+
         response = client.post(route, headers=headers(valid_jwt))
 
         assert response.json == unauthorized_creds_expected_payload
@@ -59,11 +62,14 @@ def test_health_call_with_invalid_creds_failure(
         assert response.json == invalid_creds_expected_payload
 
 
-def test_health_call_success(route, client, valid_jwt, chronicle_client_ok):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_ok), \
-         patch('api.utils.service_account.'
-               'Credentials.from_service_account_info'):
+def test_health_call_success(route, client, valid_jwt, chronicle_response_ok):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        client_mock = MagicMock()
+        client_mock.request.return_value = chronicle_response_ok
+        authorized_http_mock.return_value = client_mock
+
         response = client.post(route, headers=headers(valid_jwt))
 
         assert response.status_code == HTTPStatus.OK

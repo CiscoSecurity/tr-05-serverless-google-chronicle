@@ -28,46 +28,39 @@ def client(secret_key):
         yield client
 
 
-class ChronicleClientMock:
-    def __init__(self, status_code, response_body, reason=None):
-        self.__response_mock = MagicMock()
-        self.__response_mock.status = status_code
-        if reason:
-            self.__response_mock.reason = reason
-        self.__response_body = response_body
-
-    def request(self, *args, **kwargs):
-        return self.__response_mock, self.__response_body
+class ResponseMock:
+    def __init__(self, status_code, reason=None):
+        self.status = status_code
+        self.reason = reason
 
 
 @fixture(scope='session')
-def chronicle_client_unauthorized_creds(secret_key):
-    return ChronicleClientMock(
-        HTTPStatus.FORBIDDEN,
+def chronicle_response_unauthorized_creds(secret_key):
+    return (
+        ResponseMock(HTTPStatus.FORBIDDEN),
         json.dumps({"error": {"code": HTTPStatus.FORBIDDEN,
                               "message": "Wrong creds!",
-                              "status": PERMISSION_DENIED}})
+                              "status": PERMISSION_DENIED}}))
+
+
+@fixture(scope='session')
+def chronicle_response_internal_error():
+    return (
+        ResponseMock(HTTPStatus.INTERNAL_SERVER_ERROR,
+                     reason='Internal Server Error'),
+        json.dumps({'error':
+                        {'code': HTTPStatus.INTERNAL_SERVER_ERROR,
+                         'message': 'generic::internal: internal error, '
+                                    'please try again later',
+                         'status': 'INTERNAL'}}),
+
     )
 
 
 @fixture(scope='session')
-def chronicle_client_internal_error():
-    return ChronicleClientMock(
-        HTTPStatus.INTERNAL_SERVER_ERROR,
-        json.dumps(
-            {'error':
-                 {'code': HTTPStatus.INTERNAL_SERVER_ERROR,
-                  'message': 'generic::internal: internal error, '
-                             'please try again later',
-                  'status': 'INTERNAL'}}),
-        reason='Internal Server Error'
-    )
-
-
-@fixture(scope='session')
-def chronicle_client_too_many_requests():
-    return ChronicleClientMock(
-        HTTPStatus.TOO_MANY_REQUESTS,
+def chronicle_response_too_many_requests():
+    return (
+        ResponseMock(HTTPStatus.TOO_MANY_REQUESTS),
         json.dumps(
             {'error':
                  {'code': TOO_MANY_REQUESTS,
@@ -75,23 +68,20 @@ def chronicle_client_too_many_requests():
                              'ListArtifactAssets quota for 000000demo-dev',
                   'status': 'RESOURCE_EXHAUSTED'},
              'data': {}
-             },
-
-        )
+             })
     )
 
 
 @fixture(scope='session')
-def chronicle_client_bad_request():
-    return ChronicleClientMock(
-        HTTPStatus.BAD_REQUEST,
-        "HTTP bla bla bla",
-        reason='BAD REQUEST'
+def chronicle_response_bad_request():
+    return (
+        ResponseMock(HTTPStatus.BAD_REQUEST, reason='BAD REQUEST'),
+        "HTTP bla bla bla"
     )
 
 
 @fixture(scope='session')
-def chronicle_client_ok(secret_key):
+def chronicle_response_ok(secret_key):
     payload_success = {
         "assets": [
             {
@@ -106,15 +96,10 @@ def chronicle_client_ok(secret_key):
                 },
             },
         ],
-        "uri": [
-            "https://demodev.backstory.chronicle.security/domainResults?\
-                domain=www.google.com&selectedList=DomainViewDistinctAssets&\
-                whoIsTimestamp=2020-03-19T10%3A33%3A26.529103917Z"
-        ],
+        "uri": ["uri1"],
     }
 
-    return ChronicleClientMock(
-        HTTPStatus.OK, json.dumps(payload_success))
+    return ResponseMock(HTTPStatus.OK), json.dumps(payload_success)
 
 
 @fixture(scope='session')
@@ -174,19 +159,21 @@ def invalid_jwt_expected_payload(route):
 
 
 @fixture(scope='module')
-def unauthorized_creds_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': PERMISSION_DENIED,
-                 'message': ("Unexpected response from Chronicle Backstory: "
-                             "Wrong creds!"),
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
+def unauthorized_creds_body():
+    return {
+        'errors': [
+            {'code': PERMISSION_DENIED,
+             'message': ("Unexpected response from Chronicle Backstory: "
+                         "Wrong creds!"),
+             'type': 'fatal'}
+        ],
+        'data': {}
+    }
+
+
+@fixture(scope='module')
+def unauthorized_creds_expected_payload(route, unauthorized_creds_body):
+    return expected_payload(route, unauthorized_creds_body)
 
 
 @fixture(scope='module')
@@ -206,7 +193,7 @@ def invalid_creds_expected_payload(route):
 
 
 @fixture(scope='module')
-def invalid_json_expected_payload(route, client):
+def invalid_json_expected_payload(route):
     return expected_payload(
         route,
         {
@@ -222,7 +209,7 @@ def invalid_json_expected_payload(route, client):
 
 
 @fixture(scope='module')
-def too_many_requests_expected_payload(route, client):
+def too_many_requests_expected_payload(route):
     return expected_payload(
         route,
         {
@@ -238,7 +225,7 @@ def too_many_requests_expected_payload(route, client):
 
 
 @fixture(scope='module')
-def internal_server_error_expected_payload(route, client):
+def internal_server_error_expected_payload(route):
     return expected_payload(
         route,
         {
@@ -254,5 +241,116 @@ def internal_server_error_expected_payload(route, client):
 
 
 @fixture(scope='module')
-def bad_request_expected_payload(route, client):
+def bad_request_expected_payload(route):
     return expected_payload(route, {'data': {}})
+
+
+@fixture(scope='module')
+def success_enrich_body():
+    return {
+        'data': {
+            'sightings': {
+                'count': 2,
+                'docs': [
+                    {
+                        'confidence': 'High',
+                        'count': 1,
+                        'internal': True,
+                        'observables': [
+                            {
+                                'type': 'domain',
+                                'value': 'www.google.com'
+                            }
+                        ],
+                        'observed_time': {
+                            'start_time': '2019-10-15T14:53:57Z'
+                        },
+                        'relations': [
+                            {
+                                'origin': 'Chronicle Enrichment Module',
+                                'related': {
+                                    'type': 'domain',
+                                    'value': 'www.google.com'
+                                },
+                                'relation': 'Supra-domain_Of',
+                                'source': {
+                                    'type': 'domain',
+                                    'value': 'google.com'
+                                }
+                            }
+                        ],
+                        'schema_version': '1.0.16',
+                        'source': 'Chronicle',
+                        'source_uri': 'uri1',
+                        'targets': [
+                            {
+                                'observables': [
+                                    {
+                                        'type': 'hostname',
+                                        'value': 'ronald-malone-pc'
+                                    }
+                                ],
+                                'observed_time': {
+                                    'start_time': '2019-10-15T14:53:57Z'
+                                },
+                                'type': 'endpoint'
+                            }
+                        ],
+                        'title': 'Found in Chronicle',
+                        'type': 'sighting'
+                    },
+                    {
+                        'confidence': 'High',
+                        'count': 1,
+                        'internal': True,
+                        'observables': [
+                            {
+                                'type': 'domain',
+                                'value': 'www.google.com'
+                            }
+                        ],
+                        'observed_time': {
+                            'start_time': '2018-11-16T08:42:20Z'
+                        },
+                        'relations': [
+                            {
+                                'origin': 'Chronicle Enrichment Module',
+                                'related': {
+                                    'type': 'domain',
+                                    'value': 'www.google.com'
+                                },
+                                'relation': 'Supra-domain_Of',
+                                'source': {
+                                    'type': 'domain',
+                                    'value': 'google.com'
+                                }
+                            }
+                        ],
+                        'schema_version': '1.0.16',
+                        'source': 'Chronicle',
+                        'source_uri': 'uri1',
+                        'targets': [
+                            {
+                                'observables': [
+                                    {
+                                        'type': 'hostname',
+                                        'value': 'ronald-malone-pc'
+                                    }
+                                ],
+                                'observed_time': {
+                                    'start_time': '2018-11-16T08:42:20Z'
+                                },
+                                'type': 'endpoint'
+                            }
+                        ],
+                        'title': 'Found in Chronicle',
+                        'type': 'sighting'
+                    }
+                ]
+            }
+        }}
+
+
+@fixture(scope='module')
+def success_enrich_expected_payload(route, success_enrich_body):
+    return expected_payload(route, success_enrich_body)
