@@ -28,7 +28,7 @@ def get_jwt():
 
 def get_chronicle_http_client(account_info):
     """
-    Returns an http client that is authorized with the given credentials
+    Return an http client that is authorized with the given credentials
     using oauth2client or google-auth.
 
     """
@@ -98,7 +98,7 @@ def join_url(base, *parts):
 
 def all_subclasses(cls):
     """
-        Retrieves set of class subclasses recursively.
+    Retrieve set of class subclasses recursively.
     """
     subclasses = set(cls.__subclasses__())
     return subclasses.union(s for c in subclasses for s in all_subclasses(c))
