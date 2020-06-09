@@ -34,6 +34,15 @@ class ResponseMock:
         self.reason = reason
 
 
+class ClientMock(MagicMock):
+    def __init__(self, return_value=None, side_effect=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if return_value:
+            self.request.return_value = return_value
+        elif side_effect:
+            self.request.side_effect = side_effect
+
+
 @fixture(scope='session')
 def chronicle_response_unauthorized_creds(secret_key):
     return (
@@ -48,11 +57,14 @@ def chronicle_response_internal_error():
     return (
         ResponseMock(HTTPStatus.INTERNAL_SERVER_ERROR,
                      reason='Internal Server Error'),
-        json.dumps({'error':
-                        {'code': HTTPStatus.INTERNAL_SERVER_ERROR,
-                         'message': 'generic::internal: internal error, '
-                                    'please try again later',
-                         'status': 'INTERNAL'}}),
+        json.dumps(
+            {
+                'error':
+                    {
+                        'code': HTTPStatus.INTERNAL_SERVER_ERROR,
+                        'message': 'generic::internal: internal error, '
+                                   'please try again later',
+                        'status': 'INTERNAL'}}),
 
     )
 
@@ -62,13 +74,17 @@ def chronicle_response_too_many_requests():
     return (
         ResponseMock(HTTPStatus.TOO_MANY_REQUESTS),
         json.dumps(
-            {'error':
-                 {'code': TOO_MANY_REQUESTS,
-                  'message': 'generic::resource_exhausted: insufficient '
-                             'ListArtifactAssets quota for 000000demo-dev',
-                  'status': 'RESOURCE_EXHAUSTED'},
-             'data': {}
-             })
+            {
+                'error':
+                    {
+                        'code': TOO_MANY_REQUESTS,
+                        'message': 'generic::resource_exhausted: insufficient '
+                                   'ListArtifactAssets quota for '
+                                   '000000demo-dev',
+                        'status': 'RESOURCE_EXHAUSTED'},
+                'data': {}
+            }
+        )
     )
 
 

@@ -1,9 +1,10 @@
 from http import HTTPStatus
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from pytest import fixture
 
 from .utils import headers
+from ..conftest import ClientMock
 
 
 def routes():
@@ -41,9 +42,9 @@ def test_health_call_with_unauthorized_creds_failure(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_unauthorized_creds
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_unauthorized_creds
+        )
 
         response = client.post(route, headers=headers(valid_jwt))
 
@@ -66,9 +67,7 @@ def test_health_call_success(route, client, valid_jwt, chronicle_response_ok):
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_ok
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(chronicle_response_ok)
 
         response = client.post(route, headers=headers(valid_jwt))
 

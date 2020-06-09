@@ -1,9 +1,10 @@
 from http import HTTPStatus
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from pytest import fixture
 
 from .utils import headers
+from ..conftest import ClientMock
 
 
 def routes():
@@ -42,13 +43,12 @@ def test_enrich_call_with_invalid_jwt_failure(
 
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
         route, client, valid_jwt, invalid_json,
-        chronicle_response_ok, invalid_json_expected_payload,
+        invalid_json_expected_payload,
 ):
-    with patch('api.utils._auth.authorized_http') as chronicle_client_mock, \
+    with patch('api.utils._auth.authorized_http'), \
          patch('api.utils.service_account.'
                'Credentials.from_service_account_info'):
 
-        chronicle_client_mock.request.return_value = chronicle_response_ok
         response = client.post(route,
                                headers=headers(valid_jwt),
                                json=invalid_json)
@@ -71,11 +71,9 @@ def test_enrich_call_with_unauthorized_creds_failure(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
          patch('api.utils.service_account.'
                'Credentials.from_service_account_info'):
-
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_unauthorized_creds
-        authorized_http_mock.return_value = client_mock
-
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_unauthorized_creds
+        )
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
@@ -90,9 +88,9 @@ def test_enrich_call_with_too_many_requests_failure(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_too_many_requests
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_too_many_requests
+        )
 
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
@@ -108,9 +106,9 @@ def test_enrich_call_with_internal_error_failure(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_internal_error
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_internal_error
+        )
 
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
@@ -126,9 +124,9 @@ def test_enrich_call_with_bad_request_success(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_bad_request
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_bad_request
+        )
 
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
@@ -143,9 +141,9 @@ def test_enrich_call_success(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
-        client_mock = MagicMock()
-        client_mock.request.return_value = chronicle_response_ok
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_ok
+        )
 
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
@@ -177,17 +175,14 @@ def test_enrich_call_success_with_extended_error_handling(
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
          patch('api.utils.service_account.'
                'Credentials.from_service_account_info'):
-
-        client_mock = MagicMock()
-        client_mock.request.side_effect = [
-            chronicle_response_ok,
-            chronicle_response_ok,
-            chronicle_response_bad_request,
-            chronicle_response_bad_request,
-            chronicle_response_unauthorized_creds,
-            chronicle_response_unauthorized_creds,
-        ]
-        authorized_http_mock.return_value = client_mock
+        authorized_http_mock.return_value = ClientMock(
+            side_effect=[
+                chronicle_response_ok,
+                chronicle_response_ok,
+                chronicle_response_bad_request,
+                chronicle_response_unauthorized_creds,
+            ]
+        )
 
         response = client.post('observe/observables',
                                headers=headers(valid_jwt),
