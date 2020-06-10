@@ -1,9 +1,10 @@
 from http import HTTPStatus
-
 from unittest.mock import patch
+
 from pytest import fixture
 
 from .utils import headers
+from ..conftest import ClientMock
 
 
 def routes():
@@ -42,12 +43,12 @@ def test_enrich_call_with_invalid_jwt_failure(
 
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
         route, client, valid_jwt, invalid_json,
-        chronicle_client_ok, invalid_json_expected_payload,
+        invalid_json_expected_payload,
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_ok), \
+    with patch('api.utils._auth.authorized_http'), \
          patch('api.utils.service_account.'
                'Credentials.from_service_account_info'):
+
         response = client.post(route,
                                headers=headers(valid_jwt),
                                json=invalid_json)
@@ -58,18 +59,21 @@ def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
 
 @fixture(scope='module')
 def valid_json():
-    return [{'type': 'domain', 'value': 'cisco.com'}]
+    return [{'type': 'domain', 'value': 'google.com'}]
 
 
 def test_enrich_call_with_unauthorized_creds_failure(
         route, client, valid_jwt, valid_json,
-        chronicle_client_unauthorized_creds,
+        chronicle_response_unauthorized_creds,
         unauthorized_creds_expected_payload
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_unauthorized_creds), \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
+
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+         patch('api.utils.service_account.'
+               'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_unauthorized_creds
+        )
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
@@ -78,13 +82,16 @@ def test_enrich_call_with_unauthorized_creds_failure(
 
 def test_enrich_call_with_too_many_requests_failure(
         route, client, valid_jwt, valid_json,
-        chronicle_client_too_many_requests,
+        chronicle_response_too_many_requests,
         too_many_requests_expected_payload
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_too_many_requests), \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_too_many_requests
+        )
+
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
@@ -93,28 +100,34 @@ def test_enrich_call_with_too_many_requests_failure(
 
 def test_enrich_call_with_internal_error_failure(
         route, client, valid_jwt, valid_json,
-        chronicle_client_internal_error,
+        chronicle_response_internal_error,
         internal_server_error_expected_payload
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_internal_error), \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_internal_error
+        )
+
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
         assert response.json == internal_server_error_expected_payload
 
 
-def test_enrich_call_with_bad_request_failure(
+def test_enrich_call_with_bad_request_success(
         route, client, valid_jwt, valid_json,
-        chronicle_client_bad_request,
+        chronicle_response_bad_request,
         bad_request_expected_payload
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_bad_request), \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_bad_request
+        )
+
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
@@ -122,23 +135,65 @@ def test_enrich_call_with_bad_request_failure(
 
 
 def test_enrich_call_success(
-        route, client, valid_jwt, valid_json, chronicle_client_ok
+        route, client, valid_jwt, valid_json,
+        chronicle_response_ok, success_enrich_expected_payload
 ):
-    with patch('api.utils._auth.authorized_http',
-               return_value=chronicle_client_ok), \
-         patch('api.utils.service_account.'
-               'Credentials.from_service_account_info'):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            chronicle_response_ok
+        )
+
         response = client.post(route, headers=headers(valid_jwt),
                                json=valid_json)
 
         assert response.status_code == HTTPStatus.OK
         assert response.json.get('errors') is None
 
-        data = response.get_json()
-        if type(data["data"]) == dict and data["data"].get("sightings"):
-            assert data["data"]["sightings"]["docs"][0]["confidence"]
-            assert data["data"]["sightings"]["docs"][0]["id"]
-            assert data["data"]["sightings"]["docs"][0]["count"]
-            assert data["data"]["sightings"]["docs"][0]["observed_time"]
-            assert data["data"]["sightings"]["docs"][0]["schema_version"]
-            assert data["data"]["sightings"]["docs"][0]["type"]
+        response = response.get_json()
+
+        if response.get('data') and response['data'].get('sightings'):
+            for doc in response['data']['sightings']['docs']:
+                assert doc.pop('id')
+
+        assert response == success_enrich_expected_payload
+
+
+@fixture(scope='module')
+def valid_json_multiple():
+    return [{'type': 'domain', 'value': 'google.com'},
+            {'type': 'domain', 'value': '1.1.1.1'},
+            {'type': 'domain', 'value': 'cisco.com'}]
+
+
+def test_enrich_call_success_with_extended_error_handling(
+        client, valid_jwt, valid_json_multiple, chronicle_response_ok,
+        chronicle_response_unauthorized_creds, chronicle_response_bad_request,
+        success_enrich_body, unauthorized_creds_body
+):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+         patch('api.utils.service_account.'
+               'Credentials.from_service_account_info'):
+        authorized_http_mock.return_value = ClientMock(
+            side_effect=[
+                chronicle_response_ok,
+                chronicle_response_ok,
+                chronicle_response_bad_request,
+                chronicle_response_unauthorized_creds,
+            ]
+        )
+
+        response = client.post('observe/observables',
+                               headers=headers(valid_jwt),
+                               json=valid_json_multiple)
+
+        assert response.status_code == HTTPStatus.OK
+
+        response = response.get_json()
+
+        for doc in response['data']['sightings']['docs']:
+            assert doc.pop('id')
+
+        assert response['data'] == success_enrich_body['data']
+        assert response['errors'] == unauthorized_creds_body['errors']

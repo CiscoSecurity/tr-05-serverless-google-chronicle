@@ -1,6 +1,6 @@
 from functools import partial
 
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, g
 
 from api.client import ChronicleClient
 from api.mappings import Mapping
@@ -10,6 +10,7 @@ from api.utils import (
     get_chronicle_http_client,
     get_jwt,
     get_json,
+    jsonify_result
 )
 
 enrich_api = Blueprint('enrich', __name__)
@@ -34,9 +35,9 @@ def observe_observables():
         'DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER'
     ]
 
-    sightings = []
-    indicators = []
-    relationships = []
+    g.sightings = []
+    g.indicators = []
+    g.relationships = []
 
     for x in observables:
 
@@ -49,28 +50,14 @@ def observe_observables():
             x_sightings = mapping.extract_sightings(assets_data, limit)
             x_indicators = mapping.extract_indicators(ioc_details, limit)
 
-            sightings.extend(x_sightings)
-            indicators.extend(x_indicators)
+            g.sightings.extend(x_sightings)
+            g.indicators.extend(x_indicators)
 
-            relationships.extend(
+            g.relationships.extend(
                 mapping.create_relationships(x_sightings, x_indicators)
             )
 
-    data = {}
-
-    def format_docs(docs):
-        return {'count': len(docs), 'docs': docs}
-
-    if indicators:
-        data['indicators'] = format_docs(indicators)
-
-    if sightings:
-        data['sightings'] = format_docs(sightings)
-
-    if relationships:
-        data['relationships'] = format_docs(relationships)
-
-    return jsonify_data(data)
+    return jsonify_result()
 
 
 @enrich_api.route('/refer/observables', methods=['POST'])

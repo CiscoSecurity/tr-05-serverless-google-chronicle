@@ -24,7 +24,7 @@ class Mapping(metaclass=ABCMeta):
 
     @classmethod
     def for_(cls, observable):
-        """Returns an instance of `Mapping` for the specified type."""
+        """Return an instance of `Mapping` for the specified type."""
 
         for subcls in all_subclasses(Mapping):
             if subcls.type() == observable['type']:
@@ -35,7 +35,7 @@ class Mapping(metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def type(cls):
-        """Returns the observable type that the mapping is able to process."""
+        """Return the observable type that the mapping is able to process."""
 
     FlattenAssertRecord = namedtuple(
         'FlattenAssertRecord',
@@ -44,7 +44,7 @@ class Mapping(metaclass=ABCMeta):
 
     def prepare_asset_records(self, records):
         """
-        Filters nonmappable Chronicle assets and
+        Filter nonmappable Chronicle assets and
         converts original Chronicle asset record:
         {
           "asset": {
@@ -134,7 +134,7 @@ class Mapping(metaclass=ABCMeta):
 
     @staticmethod
     def map_observables(info):
-        """Retrieves CTR observables list
+        """Retrieve CTR observables list
         from Chronicle {'type': 'value'} structures."""
 
         def ctr_type(chronicle_type, value):

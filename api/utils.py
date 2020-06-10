@@ -1,6 +1,6 @@
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from flask import request, current_app, jsonify
+from flask import request, current_app, jsonify, g
 from google.oauth2 import service_account
 from googleapiclient import _auth
 
@@ -28,7 +28,7 @@ def get_jwt():
 
 def get_chronicle_http_client(account_info):
     """
-    Returns an http client that is authorized with the given credentials
+    Return an http client that is authorized with the given credentials
     using oauth2client or google-auth.
 
     """
@@ -59,12 +59,34 @@ def get_json(schema):
     return data
 
 
+def format_docs(docs):
+    return {'count': len(docs), 'docs': docs}
+
+
 def jsonify_data(data):
     return jsonify({'data': data})
 
 
 def jsonify_errors(error):
     return jsonify({'errors': [error]})
+
+
+def jsonify_result():
+    result = {'data': {}}
+
+    if g.get('sightings'):
+        result['data']['sightings'] = format_docs(g.sightings)
+
+    if g.get('indicators'):
+        result['data']['indicators'] = format_docs(g.indicators)
+
+    if g.get('relationships'):
+        result['data']['relationships'] = format_docs(g.relationships)
+
+    if g.get('errors'):
+        result['errors'] = g.errors
+
+    return jsonify(result)
 
 
 def join_url(base, *parts):
@@ -76,7 +98,7 @@ def join_url(base, *parts):
 
 def all_subclasses(cls):
     """
-        Retrieves set of class subclasses recursively.
+    Retrieve set of class subclasses recursively.
     """
     subclasses = set(cls.__subclasses__())
     return subclasses.union(s for c in subclasses for s in all_subclasses(c))

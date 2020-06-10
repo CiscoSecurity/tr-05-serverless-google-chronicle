@@ -11,6 +11,8 @@ from api.errors import (
 )
 from api.utils import join_url
 
+NOT_CRITICAL_ERRORS = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND)
+
 
 class ChronicleClient:
     def __init__(self, base_url, client):
@@ -70,10 +72,13 @@ class ChronicleClient:
                      'User-Agent': current_app.config['USER_AGENT']}
         )
 
-        if response.status != HTTPStatus.OK:
-            raise UnexpectedChronicleResponseError(response, body)
+        if response.status == HTTPStatus.OK:
+            return json.loads(body)
 
-        return json.loads(body)
+        if response.status in NOT_CRITICAL_ERRORS:
+            return {}
+
+        raise UnexpectedChronicleResponseError(response, body)
 
     def list_assets(self, observable, number_of_days_to_filter,
                     page_size=None):
