@@ -18,12 +18,16 @@ def test_positive_indicators_domain(module_headers):
     Importance: Critical
     """
     observable = {'type': 'domain', 'value': 'wp.com'}
-    response = enrich_observe_observables(
+    response_from_all_modules = enrich_observe_observables(
         payload=[observable],
         **{'headers': module_headers}
     )['data']
-    indicators = get_observables(
-        response, 'Chronicle Backstory')['data']['indicators']
+    response_from_chronicle_module = get_observables(
+        response_from_all_modules, 'Chronicle Backstory')
+    assert response_from_chronicle_module['module']
+    assert response_from_chronicle_module['module_instance_id']
+    assert response_from_chronicle_module['module_type_id']
+    indicators = response_from_chronicle_module['data']['indicators']
     assert indicators['count'] == 1
     # check some generic properties
     assert indicators['docs'][0]['type'] == 'indicator'
