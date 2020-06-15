@@ -24,7 +24,7 @@ class TRFormattedError(Exception):
 
 class UnexpectedChronicleResponseError(TRFormattedError):
     def __init__(self, response, payload):
-        title = "Unexpected response from Chronicle Backstory"
+        title = "Unexpected response from Google Chronicle"
 
         if response.status == HTTPStatus.INTERNAL_SERVER_ERROR:
             super().__init__(UNKNOWN, f"{title}: {response.reason}")
@@ -32,7 +32,7 @@ class UnexpectedChronicleResponseError(TRFormattedError):
         elif response.status == HTTPStatus.TOO_MANY_REQUESTS:
             super().__init__(
                 TOO_MANY_REQUESTS,
-                "Too many requests to Chronicle Backstory have been made. "
+                "Too many requests to Google Chronicle have been made. "
                 "Please, try again later."
             )
 
@@ -72,7 +72,7 @@ class InvalidChronicleCredentialsError(TRFormattedError):
     def __init__(self, error):
         super().__init__(
             PERMISSION_DENIED,
-            f'Chronicle Backstory Authorization failed: {str(error)}.'
+            f'Google Chronicle Authorization failed: {str(error)}.'
         )
 
 
