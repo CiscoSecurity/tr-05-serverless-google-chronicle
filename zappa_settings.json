@@ -7,9 +7,9 @@
         "log_level": "INFO",
         "manage_roles": false,
         "profile_name": "serverless",
-        "project_name": "tr-chronicle-backstory-relay",
+        "project_name": "tr-google-chronicle-relay",
         "role_name": "tr-serverless-relay-ZappaLambdaExecutionRole",
         "runtime": "python3.7",
-        "s3_bucket": "zappa-tr-chronicle-backstory-relay"
+        "s3_bucket": "zappa-tr-google-chronicle-relay"
     }
 }

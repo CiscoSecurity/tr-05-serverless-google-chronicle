@@ -4,7 +4,7 @@ from ctrlibrary.threatresponse.enrich import enrich_observe_observables
 
 def test_positive_indicators_domain(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    indicators for observable with domain from Chronicle Backstory
+    indicators for observable with domain from Google Chronicle
 
     ID: CCTRI-859-56c35f55-a7f7-4857-8ba1-39ef7f644932
 
@@ -13,7 +13,7 @@ def test_positive_indicators_domain(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains expected indicators for
-            observable from Chronicle Backstory
+            observable from Google Chronicle
 
     Importance: Critical
     """
@@ -23,7 +23,7 @@ def test_positive_indicators_domain(module_headers):
         **{'headers': module_headers}
     )['data']
     response_from_chronicle_module = get_observables(
-        response_from_all_modules, 'Chronicle Backstory')
+        response_from_all_modules, 'Google Chronicle')
     assert response_from_chronicle_module['module']
     assert response_from_chronicle_module['module_instance_id']
     assert response_from_chronicle_module['module_type_id']

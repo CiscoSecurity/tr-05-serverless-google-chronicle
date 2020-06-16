@@ -179,7 +179,7 @@ def unauthorized_creds_body():
     return {
         'errors': [
             {'code': PERMISSION_DENIED,
-             'message': ("Unexpected response from Chronicle Backstory: "
+             'message': ("Unexpected response from Google Chronicle: "
                          "Wrong creds!"),
              'type': 'fatal'}
         ],
@@ -199,7 +199,7 @@ def invalid_creds_expected_payload(route):
         {
             'errors': [
                 {'code': PERMISSION_DENIED,
-                 'message': ('Chronicle Backstory Authorization failed:'
+                 'message': ('Google Chronicle Authorization failed:'
                              ' Wrong structure.'),
                  'type': 'fatal'}
             ],
@@ -231,7 +231,7 @@ def too_many_requests_expected_payload(route):
         {
             'errors': [
                 {'code': TOO_MANY_REQUESTS,
-                 'message': 'Too many requests to Chronicle Backstory'
+                 'message': 'Too many requests to Google Chronicle'
                             ' have been made. Please, try again later.',
                  'type': 'fatal'}
             ],
@@ -247,7 +247,7 @@ def internal_server_error_expected_payload(route):
         {
             'errors': [
                 {'code': UNKNOWN,
-                 'message': 'Unexpected response from Chronicle Backstory:'
+                 'message': 'Unexpected response from Google Chronicle:'
                             ' Internal Server Error',
                  'type': 'fatal'}
             ],

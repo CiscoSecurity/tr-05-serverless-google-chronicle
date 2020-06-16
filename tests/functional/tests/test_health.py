@@ -4,7 +4,7 @@ from ctrlibrary.threatresponse.enrich import enrich_post_health
 
 def test_positive_smoke_enrich_health(module_headers):
     """Perform testing for enrich health endpoint to check
-    status of Chronicle Backstory
+    status of Google Chronicle
 
     ID: CCTRI-769-34e92acf-45e2-4ef6-b5f4-c7e7f4e10f11
 
@@ -13,12 +13,12 @@ def test_positive_smoke_enrich_health(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains status Ok
-            from Chronicle Backstory module
+            from Google Chronicle module
 
     Importance: Critical
     """
     response = enrich_post_health(
         **{'headers': module_headers}
     )['data']
-    health = get_observables(response, 'Chronicle Backstory')
+    health = get_observables(response, 'Google Chronicle')
     assert health['data'] == {'status': 'ok'}

@@ -4,7 +4,7 @@ from ctrlibrary.threatresponse.enrich import enrich_observe_observables
 
 def test_positive_sighting_domain(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable with domain from Chronicle Backstory
+    sightings for observable with domain from Google Chronicle
 
     ID: CCTRI-768-13cda7fd-1357-4621-98f6-a0dd3789c3cf
 
@@ -13,7 +13,7 @@ def test_positive_sighting_domain(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains expected sightings for
-            observable from Chronicle Backstory
+            observable from Google Chronicle
 
     Importance: Critical
     """
@@ -23,7 +23,7 @@ def test_positive_sighting_domain(module_headers):
         **{'headers': module_headers}
     )
     sightings = get_observables(
-        response['data'], 'Chronicle Backstory')['data']['sightings']
+        response['data'], 'Google Chronicle')['data']['sightings']
     assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
@@ -64,7 +64,7 @@ def test_positive_sighting_domain(module_headers):
 
 def test_positive_sighting_ip(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable with IP from Chronicle Backstory
+    sightings for observable with IP from Google Chronicle
 
     ID: CCTRI-768-33cda5fd-1557-4625-98f5-a0dd3589c35a
 
@@ -73,7 +73,7 @@ def test_positive_sighting_ip(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains expected sightings for
-            observable from Chronicle Backstory
+            observable from Google Chronicle
 
     Importance: Critical
     """
@@ -83,7 +83,7 @@ def test_positive_sighting_ip(module_headers):
         **{'headers': module_headers}
     )
     sightings = get_observables(
-        response['data'], 'Chronicle Backstory')['data']['sightings']
+        response['data'], 'Google Chronicle')['data']['sightings']
     assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
@@ -116,7 +116,7 @@ def test_positive_sighting_ip(module_headers):
 
 def test_positive_sighting_hash(module_headers):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable by md5 hash type from Chronicle Backstory module
+    sightings for observable by md5 hash type from Google Chronicle module
 
     ID: CCTRI-768-070314bd-d775-4463-94eb-f74cc3886384
 
@@ -125,7 +125,7 @@ def test_positive_sighting_hash(module_headers):
 
     Expectedresults:
         1. Check that data in response body contains expected sightings for
-            observable from Chronicle Backstory
+            observable from Google Chronicle
 
     Importance: Critical
     """
@@ -135,7 +135,7 @@ def test_positive_sighting_hash(module_headers):
         **{'headers': module_headers}
     )
     sightings = get_observables(
-        response['data'], 'Chronicle Backstory')['data']['sightings']
+        response['data'], 'Google Chronicle')['data']['sightings']
     assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:

@@ -4,7 +4,7 @@ import pytest
 
 def test_relay_auth_positive(relay_api):
     """Perform testing for relay health endpoint to check
-    status auth for Chronicle Backstory
+    status auth for Google Chronicle
 
     ID: CCTRI-769-0cc7805e-297d-4700-872b-dbf82f267326
 
@@ -27,13 +27,13 @@ def test_relay_auth_positive(relay_api):
         ('', 'Invalid Authorization Bearer JWT.'),
         ('123', 'Invalid Authorization Bearer JWT.'),
         (os.environ['ANOTHER_KEY'],
-         'Unexpected response from Chronicle Backstory: '
+         'Unexpected response from Google Chronicle: '
          'Backstory API has not been used in project ')
      )
 )
 def test_relay_auth_negative(relay_api_without_token, wrong_token, message):
     """Perform testing for relay health endpoint to check
-    status auth for Chronicle Backstory with wrong token
+    status auth for Google Chronicle with wrong token
 
     ID: CCTRI-769-86f8a6c7-4356-4fe8-b504-8403c2be7e41
 

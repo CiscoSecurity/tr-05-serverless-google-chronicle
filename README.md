@@ -1,6 +1,6 @@
 [![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-chronicle-backstory.svg?branch=develop)](https://api.travis-ci.com/CiscoSecurity/tr-05-serverless-chronicle-backstory)
 
-# Chronicle Backstory Relay API
+# Google Chronicle Relay API
 
 The API is just a simple Flask (WSGI) application which can be easily
 packaged and deployed as an AWS Lambda Function working behind an AWS API
@@ -12,7 +12,7 @@ be pushed to Threat Response as a Relay Module using the
 
 ## Details
 
-Chronicle Backstory Relay API implements the following endpoints:
+Google Chronicle Relay API implements the following endpoints:
 - `/observe/observables`
 - `/health`
 
@@ -31,7 +31,7 @@ Other types of observables are ignored.
 
 ## Authorization
 
-To query Chronicle Backstory API, Google API client credentials are used.
+To query Google Chronicle API, Google API client credentials are used.
 The credentials file has the following structure:
 
 ```json
