@@ -13,7 +13,7 @@ install:
 - pip install -U -r test-requirements.txt
 
 before_script:
-- cp ~/build/CiscoSecurity/tr-05-serverless-chronicle-backstory/tests/functional/project.properties.sample ~/build/CiscoSecurity/project.properties
+- cp ~/build/CiscoSecurity/tr-05-serverless-google-chronicle/tests/functional/project.properties.sample ~/build/CiscoSecurity/project.properties
 - sed -i "s|ctr_hostname=.*|ctr_hostname=$ctr_hostname|" ~/build/CiscoSecurity/project.properties
 - sed -i "s|ctr_client_id=.*|ctr_client_id=$ctr_client_id|" ~/build/CiscoSecurity/project.properties
 - sed -i "s|ctr_client_password=.*|ctr_client_password=$ctr_client_password|" ~/build/CiscoSecurity/project.properties

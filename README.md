@@ -1,4 +1,4 @@
-[![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-chronicle-backstory.svg?branch=develop)](https://api.travis-ci.com/CiscoSecurity/tr-05-serverless-chronicle-backstory)
+[![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-google-chronicle.svg?branch=develop)](https://api.travis-ci.com/CiscoSecurity/tr-05-serverless-google-chronicle)
 
 # Google Chronicle Relay API
 
