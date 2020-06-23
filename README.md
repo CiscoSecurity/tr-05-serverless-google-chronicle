@@ -1,4 +1,4 @@
-[![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-gigamon-threatinsight.svg?branch=develop)](https://travis-ci.com/CiscoSecurity/tr-05-gigamon-threatinsight)
+[![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-google-chronicle.svg?branch=develop)](https://api.travis-ci.com/CiscoSecurity/tr-05-serverless-google-chronicle)
 
 # Google Chronicle Relay
 
