@@ -1,0 +1,19 @@
+{
+  "name": "Google Chronicle",
+  "jwt": {
+    "type": "service_account",
+    "project_id": "",
+    "private_key_id": "",
+    "private_key": "",
+    "client_id": "",
+    "auth_uri": "",
+    "token_uri": "",
+    "auth_provider_x509_cert_url": "",
+    "client_x509_cert_url": ""
+},
+  "region": {
+    "us": "f4b2cf01-0447-436e-8dc1-b0b15049888b",
+    "eu": "cdf11c33-0891-491a-8e36-201e4decd3d0",
+    "apjc": "904e961f-ff81-48f5-aeb0-5c033e2054b7"
+  }
+}
