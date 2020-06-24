@@ -222,8 +222,8 @@ If you want to test the live Lambda you may use any HTTP client (e.g. Postman),
 just make sure to send requests to your Lambda's `URL` with the `Authorization`
 header set to `Bearer <JWT>`.
 
-Feel free to take a look at the [observables.json](observables.json) file
-whenever you need some input data for testing purposes.
+**NOTE.** If you need input data for testing purposes you can use data from the
+[observables.json](observables.json) file.
 
 ## Implementation Details
 
@@ -272,6 +272,9 @@ whenever you need some input data for testing purposes.
 }
 ```
 
+**NOTE**. JWT Payload Structure above matches 
+[Google Developer Service Account Credential](https://developers.google.com/identity/protocols/oauth2#serviceaccount)
+
 ### Supported Environment Variables
 
 - `CTR_ENTITIES_LIMIT`
@@ -280,6 +283,38 @@ whenever you need some input data for testing purposes.
   - Applies to the following CTIM entities:
     - `Indicator`,
     - `Sighting`.
-  - Must be a positive integer. Defaults to `100` (if unset or incorrect). Has
-  the upper bound of `1000` to avoid getting overwhelmed with too much data, so
-  any greater values are still acceptable but also limited at the same time.
+  - Must be a positive integer. Defaults to `100` (if unset or incorrect).
+
+### CTIM Mapping Specifics
+
+Each Google Chronicle `assets` record generates 2 CTIM `Sighting` entities
+based on `assets[].firstSeenArtifactInfo.seenTime` and 
+`assets[].lastSeenArtifactInfo.seenTime` 
+which are used as `.observed_time.start_time` value of `Sighting`. 
+Objects from `assets[].asset` are treated as targets of sighting. 
+
+Objects from `.assets[].firstSeenArtifactInfo.artifactIndicator` 
+and `.assets[].firstSeenArtifactInfo.artifactIndicator` 
+are used as `sighting.observables`. 
+In most cases, `artifactIndicator` field holds the same value as 
+an input parameter of investigation, but in a couple of cases it may differ:
+-  when a `subdomain` is returned for `domain` investigation 
+as `artifactIndicator`, 
+observable relation `domain->'Supra-domain_Of'->subdomain` is created.
+- when `domain` is returned as `artifactIndicator` for `IP` investigation, 
+observable relation `domain->'Resolved_To'->IP` is created.
+ 
+Each Google Chronicle `IOC details` record generates a CTIM `Indicator` entity.
+`IOC details` are provided for such types: `domain`, `ip`, `ipv6`.
+The actual mapping here is quite straightforward. The only non-obvious piece 
+of the mapping is the logic for inferring the actual values 
+for the `confidence` field: 
+possible values of `raw_confidence_score` field, which is used as a source of 
+`confidence`, are: `Low`, `Medium`, `High` or a number between `0` and `127`. 
+The string values are used as-is, while for number 
+the diapason of possible values is divided into 3 equal segments,
+affiling of the number to one of which means that confidence is 
+`Low`, `Medium` or `High` correspondingly.  
+
+Each  `Sighting` is linked to each `Indicator` with corresponding 
+CTIM `Relationship`.
