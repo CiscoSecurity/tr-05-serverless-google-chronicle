@@ -93,7 +93,7 @@ class Mapping(metaclass=ABCMeta):
     def _sighting(self, record, raw_data_count, uri):
         result = {
             **CTIM_DEFAULTS,
-            'id': f'transient:{uuid4()}',
+            'id': f'transient:sighting-{uuid4()}',
             'type': 'sighting',
             'source': 'Chronicle',
             'title': 'Found in Chronicle',
@@ -177,7 +177,7 @@ class Mapping(metaclass=ABCMeta):
         def indicator(source):
             r = {
                 **CTIM_DEFAULTS,
-                'id': f'transient:{uuid4()}',
+                'id': f'transient:indicator-{uuid4()}',
                 'type': 'indicator',
                 'producer': 'Chronicle',
                 'valid_time': {},
@@ -205,7 +205,7 @@ class Mapping(metaclass=ABCMeta):
         def sighting_of(sighting, indicator):
             return {
                 **CTIM_DEFAULTS,
-                'id': f'transient:{uuid4()}',
+                'id': f'transient:relationship-{uuid4()}',
                 'type': 'relationship',
                 'relationship_type': 'sighting-of',
                 'source_ref': sighting['id'],

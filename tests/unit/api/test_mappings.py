@@ -52,7 +52,7 @@ def test_map(input_data, method):
                                                       100)
 
         for record in results:
-            assert record.pop('id').startswith('transient:')
+            assert record.pop('id').startswith(f'transient:{record["type"]}-')
         assert results == data[method]['output']
 
 
@@ -80,22 +80,18 @@ def test_create_relationships():
     sightings = [{'id': 's1'}, {'id': 's2'}, {'id': 's3'}]
     indicators = []
     relationships = Mapping.create_relationships(sightings, indicators)
-    for relationship in relationships:
-        assert relationship.pop('id').startswith('transient:')
     assert relationships == []
 
     sightings = []
     indicators = [{'id': 'i1'}, {'id': 'i2'}]
     relationships = Mapping.create_relationships(sightings, indicators)
-    for relationship in relationships:
-        assert relationship.pop('id').startswith('transient:')
     assert relationships == []
 
     sightings = [{'id': 's1'}, {'id': 's2'}, {'id': 's3'}]
     indicators = [{'id': 'i1'}, {'id': 'i2'}]
     relationships = Mapping.create_relationships(sightings, indicators)
     for relationship in relationships:
-        assert relationship.pop('id').startswith('transient:')
+        assert relationship.pop('id').startswith('transient:relationship-')
 
     assert relationships == [
         {'schema_version': '1.0.16',
