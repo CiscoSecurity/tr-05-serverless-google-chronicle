@@ -298,11 +298,11 @@ and `.assets[].firstSeenArtifactInfo.artifactIndicator`
 are used as `sighting.observables`. 
 In most cases, `artifactIndicator` field holds the same value as 
 an input parameter of investigation, but in a couple of cases it may differ:
--  when a `subdomain` is returned for a `domain` investigation 
-as an `artifactIndicator`, 
-an observed relation `domain->'Supra-domain_Of'->subdomain` is created.
+-  when a `subdomain` is returned as an `artifactIndicator` 
+for a `domain` investigation an observed relation
+`domain->'Supra-domain_Of'->subdomain` is created.
 - when a `domain` is returned as an `artifactIndicator` for an `IP`
-investigation, an observed relation `domain->'Resolved_To'->IP` is created.
+investigation an observed relation `domain->'Resolved_To'->IP` is created.
  
 Each Google Chronicle `IOC details` record generates a CTIM `Indicator` entity.
 `IOC details` are provided for the following types: `domain`, `ip`, `ipv6`.
