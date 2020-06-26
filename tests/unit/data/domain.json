@@ -38,7 +38,7 @@
         "observed_time": {
           "start_time": "2020-03-17T05:17:19Z"
         },
-        "schema_version": "1.0.16",
+        "schema_version": "1.0.17",
         "source": "Chronicle",
         "source_uri": "uri",
         "targets": [
@@ -71,7 +71,7 @@
         "observed_time": {
           "start_time": "2018-10-10T12:28:19Z"
         },
-        "schema_version": "1.0.16",
+        "schema_version": "1.0.17",
         "source": "Chronicle",
         "source_uri": "uri",
         "targets": [
@@ -121,7 +121,7 @@
     },
     "output": [
       {
-        "schema_version": "1.0.16",
+        "schema_version": "1.0.17",
         "type": "indicator",
         "producer": "Chronicle",
         "valid_time": {},

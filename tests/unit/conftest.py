@@ -295,7 +295,7 @@ def success_enrich_body():
                                 }
                             }
                         ],
-                        'schema_version': '1.0.16',
+                        'schema_version': '1.0.17',
                         'source': 'Chronicle',
                         'source_uri': 'uri1',
                         'targets': [
@@ -342,7 +342,7 @@ def success_enrich_body():
                                 }
                             }
                         ],
-                        'schema_version': '1.0.16',
+                        'schema_version': '1.0.17',
                         'source': 'Chronicle',
                         'source_uri': 'uri1',
                         'targets': [

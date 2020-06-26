@@ -60,7 +60,7 @@
   },
     "output": [
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -93,7 +93,7 @@
     ]
   },
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -140,7 +140,7 @@
     ]
   },
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -187,7 +187,7 @@
     ]
   },
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -220,7 +220,7 @@
     ]
   },
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -267,7 +267,7 @@
     ]
   },
   {
-    "schema_version": "1.0.16",
+    "schema_version": "1.0.17",
     "type": "sighting",
     "source": "Chronicle",
     "title": "Found in Chronicle",
@@ -334,7 +334,7 @@
     },
     "output": [
       {
-        "schema_version": "1.0.16",
+        "schema_version": "1.0.17",
         "type": "indicator",
         "producer": "Chronicle",
         "valid_time": {},

@@ -1,0 +1,14 @@
+[
+  {
+    "type": "ip",
+    "value": "8.8.8.8"
+  },
+  {
+    "type": "domain",
+    "value": "wp.com"
+  },
+  {
+    "type": "md5",
+    "value": "34d5ea586a61b0aba512c0cb1d3d8b15"
+  }
+]
