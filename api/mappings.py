@@ -13,7 +13,7 @@ UNKNOWN = 'Unknown'
 INDICATOR_SCORES = (INFO, LOW, MEDIUM, HIGH, NONE, UNKNOWN)
 
 CTIM_DEFAULTS = {
-    'schema_version': '1.0.16',
+    'schema_version': '1.0.17',
 }
 
 

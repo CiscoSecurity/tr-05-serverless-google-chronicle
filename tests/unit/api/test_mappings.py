@@ -94,22 +94,22 @@ def test_create_relationships():
         assert relationship.pop('id').startswith('transient:relationship-')
 
     assert relationships == [
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's1', 'target_ref': 'i1'},
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's2', 'target_ref': 'i1'},
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's3', 'target_ref': 'i1'},
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's1', 'target_ref': 'i2'},
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's2', 'target_ref': 'i2'},
-        {'schema_version': '1.0.16',
+        {'schema_version': '1.0.17',
          'type': 'relationship', 'relationship_type': 'sighting-of',
          'source_ref': 's3', 'target_ref': 'i2'}
     ]
