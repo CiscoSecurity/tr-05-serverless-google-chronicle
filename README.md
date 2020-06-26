@@ -295,8 +295,10 @@ e.g. `python jwt_generator.py dev --file credentials.json`
 Each Google Chronicle `assets` record generates 2 CTIM `Sighting` entities
 based on `assets[].firstSeenArtifactInfo.seenTime` and 
 `assets[].lastSeenArtifactInfo.seenTime` 
-which are used as an `.observed_time.start_time` value of a `Sighting`. 
-- Objects from `assets[].asset` are treated as a `Target` of a `Sighting`. 
+which are used as an `.observed_time.start_time` value of a `Sighting`.
+ 
+- Objects from `assets[].asset` are treated as a `Target` of a `Sighting`.
+ 
 - Objects from `.assets[].firstSeenArtifactInfo.artifactIndicator` 
 and `.assets[].firstSeenArtifactInfo.artifactIndicator` 
 are used as `sighting.observables`.  In most cases, `artifactIndicator` field 
@@ -304,11 +306,12 @@ holds the same value as an input parameter of investigation,
 but in a couple of cases it may differ:
     -  when a `subdomain` is returned as an `artifactIndicator` 
     for a `domain` investigation an observed relation
-    `domain->'Supra-domain_Of'->subdomain` is created.
+    `domain->'Supra-domain_Of'->subdomain` is created.  
     - when a `domain` is returned as an `artifactIndicator` for an `IP`
     investigation an observed relation `domain->'Resolved_To'->IP` is created.
  
 Each Google Chronicle `IOC details` record generates a CTIM `Indicator` entity.
+
 - The actual mapping here is quite straightforward. The only non-obvious piece 
 of the mapping is the logic for inferring the actual values 
 for the `confidence` field: 
@@ -318,6 +321,7 @@ which is used as a source of `confidence`, are:
 The string values are used as-is, while the diapason of possible values
 for the number is divided into 3 equal segments resulting 
 in Low, Medium and High confidence. 
+
 - `IOC details` are provided for the following types: `domain`, `ip`, `ipv6`.
 
 Each  `Sighting` is linked to each `Indicator` with the corresponding 
