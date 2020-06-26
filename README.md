@@ -300,7 +300,7 @@ which are used as an `.observed_time.start_time` value of a `Sighting`.
 - Objects from `assets[].asset` are treated as a `Target` of a `Sighting`.
  
 - Objects from `.assets[].firstSeenArtifactInfo.artifactIndicator` 
-and `.assets[].firstSeenArtifactInfo.artifactIndicator` 
+and `.assets[].lastSeenArtifactInfo.artifactIndicator` 
 are used as `sighting.observables`.  In most cases, `artifactIndicator` field 
 holds the same value as an input parameter of investigation,
 but in a couple of cases it may differ:
