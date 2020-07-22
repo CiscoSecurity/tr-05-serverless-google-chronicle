@@ -101,7 +101,10 @@ class Mapping(metaclass=ABCMeta):
             'internal': True,
             'count': raw_data_count,
             'observables': record.artifact_observables,
-            'observed_time': {'start_time': record.seen_time},
+            'observed_time': {
+                'start_time': record.seen_time,
+                'end_time': record.seen_time
+            },
         }
 
         if uri:

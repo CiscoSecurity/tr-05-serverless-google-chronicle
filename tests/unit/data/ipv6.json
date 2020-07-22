@@ -74,7 +74,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2020-03-05T19:02:21Z"
+      "start_time": "2020-03-05T19:02:21Z",
+      "end_time": "2020-03-05T19:02:21Z"
     },
     "source_uri": "uri",
     "targets": [
@@ -107,7 +108,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2020-03-05T19:02:21Z"
+      "start_time": "2020-03-05T19:02:21Z",
+      "end_time": "2020-03-05T19:02:21Z"
     },
     "source_uri": "uri",
     "targets": [
@@ -154,7 +156,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2020-03-05T19:02:21Z"
+      "start_time": "2020-03-05T19:02:21Z",
+      "end_time": "2020-03-05T19:02:21Z"
     },
     "source_uri": "uri",
     "targets": [
@@ -201,7 +204,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2019-02-24T04:45:30Z"
+      "start_time": "2019-02-24T04:45:30Z",
+      "end_time": "2019-02-24T04:45:30Z"
     },
     "source_uri": "uri",
     "targets": [
@@ -234,7 +238,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2019-02-24T04:45:30Z"
+      "start_time": "2019-02-24T04:45:30Z",
+      "end_time": "2019-02-24T04:45:30Z"
     },
     "source_uri": "uri",
     "targets": [
@@ -281,7 +286,8 @@
       }
     ],
     "observed_time": {
-      "start_time": "2019-02-24T04:45:30Z"
+      "start_time": "2019-02-24T04:45:30Z",
+      "end_time": "2019-02-24T04:45:30Z"
     },
     "source_uri": "uri",
     "targets": [
