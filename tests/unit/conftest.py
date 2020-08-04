@@ -308,7 +308,8 @@ def success_enrich_body():
                                     }
                                 ],
                                 'observed_time': {
-                                    'start_time': '2019-10-15T14:53:57Z'
+                                    'start_time': '2019-10-15T14:53:57Z',
+                                    'end_time': '2019-10-15T14:53:57Z'
                                 },
                                 'type': 'endpoint'
                             }
@@ -356,7 +357,8 @@ def success_enrich_body():
                                     }
                                 ],
                                 'observed_time': {
-                                    'start_time': '2018-11-16T08:42:20Z'
+                                    'start_time': '2018-11-16T08:42:20Z',
+                                    'end_time': '2018-11-16T08:42:20Z'
                                 },
                                 'type': 'endpoint'
                             }
