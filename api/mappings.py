@@ -91,6 +91,11 @@ class Mapping(metaclass=ABCMeta):
         return results
 
     def _sighting(self, record, raw_data_count, uri):
+        observed_time = {
+            'start_time': record.seen_time,
+            'end_time': record.seen_time
+        }
+
         result = {
             **CTIM_DEFAULTS,
             'id': f'transient:sighting-{uuid4()}',
@@ -101,10 +106,7 @@ class Mapping(metaclass=ABCMeta):
             'internal': True,
             'count': raw_data_count,
             'observables': record.artifact_observables,
-            'observed_time': {
-                'start_time': record.seen_time,
-                'end_time': record.seen_time
-            },
+            'observed_time': observed_time,
         }
 
         if uri:
@@ -115,7 +117,7 @@ class Mapping(metaclass=ABCMeta):
                 {
                     'type': 'endpoint',
                     'observables': record.asset_observables,
-                    'observed_time': {'start_time': record.seen_time}
+                    'observed_time': observed_time
                 }
             ]
 

@@ -51,7 +51,8 @@
               }
             ],
             "observed_time": {
-              "start_time": "2020-03-17T05:17:19Z"
+              "start_time": "2020-03-17T05:17:19Z",
+              "end_time": "2020-03-17T05:17:19Z"
             },
             "type": "endpoint"
           }
@@ -85,7 +86,8 @@
               }
             ],
             "observed_time": {
-              "start_time": "2018-10-10T12:28:19Z"
+              "start_time": "2018-10-10T12:28:19Z",
+              "end_time": "2018-10-10T12:28:19Z"
             },
             "type": "endpoint"
           }
