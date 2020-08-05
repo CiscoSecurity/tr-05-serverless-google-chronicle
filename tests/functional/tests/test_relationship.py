@@ -39,7 +39,7 @@ def test_positive_relationship(module_headers, observable_type, observable):
     response_from_chronicle_module = get_observables(response_from_all_modules,
                                                      MODULE_NAME)
 
-    assert response_from_chronicle_module['module_name'] == MODULE_NAME
+    assert response_from_chronicle_module['module'] == MODULE_NAME
     assert response_from_chronicle_module['module_instance_id']
     assert response_from_chronicle_module['module_type_id']
 
@@ -56,12 +56,12 @@ def test_positive_relationship(module_headers, observable_type, observable):
         )
     }
     relationships = (
-        response_from_chronicle_module['data']['relationships']['docs']
+        response_from_chronicle_module['data']['relationships']
     )
 
     assert len(relationships['docs']) > 0
 
-    for relationship in relationships:
+    for relationship in relationships['docs']:
         assert relationship['schema_version']
         assert relationship['type'] == 'relationship'
         assert relationship['relationship_type'] == 'sighting-of'
