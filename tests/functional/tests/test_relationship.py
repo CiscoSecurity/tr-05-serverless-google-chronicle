@@ -1,10 +1,20 @@
-import random
-
+import pytest
 from ctrlibrary.core.utils import get_observables
 from ctrlibrary.threatresponse.enrich import enrich_observe_observables
+from tests.functional.tests.constants import (
+    MODULE_NAME,
+    CTR_ENTITIES_LIMIT
+)
 
 
-def test_positive_relationship_domain(module_headers):
+@pytest.mark.parametrize(
+    'observable_type, observable',
+    (
+     ('ip', '1.1.1.1'),
+     ('domain', 'wp.com')
+     )
+)
+def test_positive_relationship(module_headers, observable_type, observable):
     """Perform testing for enrich observe observables endpoint to get
     relationship for observable from Google Chronicle module
 
@@ -20,27 +30,45 @@ def test_positive_relationship_domain(module_headers):
 
     Importance: Critical
     """
-    observable = {'type': 'domain', 'value': 'avira.com'}
-    response = enrich_observe_observables(
-        payload=[observable],
+    observables = [{'type': observable_type, 'value': observable}]
+    response_from_all_modules = enrich_observe_observables(
+        payload=observables,
         **{'headers': module_headers}
     )['data']
-    module_response = get_observables(response, 'Google Chronicle')['data']
-    # Get one indicator to check for relation
-    assert module_response['indicators']['count'] == 1
-    indicator = module_response['indicators']['docs'][0]
-    # Get any random sighting as we have only one indicator to be connected to
-    assert module_response['sightings']['count'] == 100
-    sighting = random.choice(module_response['sightings']['docs'])
-    # Check that we have (sightings*indicators) number of relationships
-    assert module_response['relationships']['count'] == 100
-    # Validate that entities are connected
-    relationship = [
-        d for d
-        in module_response['relationships']['docs']
-        if d.get('source_ref') == sighting['id']
-    ]
-    assert relationship, 'There is no relationship for provided sighting'
-    assert relationship[0]['type'] == 'relationship'
-    assert relationship[0]['relationship_type'] == 'sighting-of'
-    assert relationship[0]['target_ref'] == indicator['id']
+
+    response_from_chronicle_module = get_observables(response_from_all_modules,
+                                                     MODULE_NAME)
+
+    assert response_from_chronicle_module['module_name'] == MODULE_NAME
+    assert response_from_chronicle_module['module_instance_id']
+    assert response_from_chronicle_module['module_type_id']
+
+    indicators_ids = {
+        indicator['id']
+        for indicator in (
+            response_from_chronicle_module['data']['indicators']['docs']
+        )
+    }
+    sightings_ids = {
+        sighting['id']
+        for sighting in (
+            response_from_chronicle_module['data']['sightings']['docs']
+        )
+    }
+    relationships = (
+        response_from_chronicle_module['data']['relationships']['docs']
+    )
+
+    assert len(relationships['docs']) > 0
+
+    for relationship in relationships:
+        assert relationship['schema_version']
+        assert relationship['type'] == 'relationship'
+        assert relationship['relationship_type'] == 'sighting-of'
+        assert relationship['target_ref'] in indicators_ids
+        assert relationship['source_ref'] in sightings_ids
+
+    assert relationships['count'] == (
+        len(relationships['docs'])) <= (
+        CTR_ENTITIES_LIMIT
+    )

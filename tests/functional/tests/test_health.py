@@ -1,5 +1,6 @@
 from ctrlibrary.core.utils import get_observables
 from ctrlibrary.threatresponse.enrich import enrich_post_health
+from tests.functional.tests.constants import MODULE_NAME
 
 
 def test_positive_smoke_enrich_health(module_headers):
@@ -17,8 +18,9 @@ def test_positive_smoke_enrich_health(module_headers):
 
     Importance: Critical
     """
-    response = enrich_post_health(
+    response_from_all_modules = enrich_post_health(
         **{'headers': module_headers}
     )['data']
-    health = get_observables(response, 'Google Chronicle')
-    assert health['data'] == {'status': 'ok'}
+    response_from_chronicle_module = get_observables(response_from_all_modules,
+                                                     MODULE_NAME)
+    assert response_from_chronicle_module['data'] == {'status': 'ok'}

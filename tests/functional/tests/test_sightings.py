@@ -1,12 +1,31 @@
+import pytest
 from ctrlibrary.core.utils import get_observables
 from ctrlibrary.threatresponse.enrich import enrich_observe_observables
+from tests.functional.tests.constants import (
+    MODULE_NAME,
+    CONFIDENCE,
+    PRODUCER,
+    CTR_ENTITIES_LIMIT,
+    CHRONICLE_LINK,
+    URL_CATEGORY,
+    RELATION_TYPE,
+    TARGETS_OBSERVABLES_VALUE
+)
 
 
-def test_positive_sighting_domain(module_headers):
+@pytest.mark.parametrize(
+    'observable_type, observable',
+    (
+     ('ip', '1.1.1.1'),
+     ('domain', 'wp.com'),
+     ('md5', '34d5ea586a61b0aba512c0cb1d3d8b15')
+     )
+)
+def test_positive_sighting(module_headers, observable, observable_type):
     """Perform testing for enrich observe observables endpoint to get
-    sightings for observable with domain from Google Chronicle
+    sightings for observable from Google Chronicle
 
-    ID: CCTRI-768-13cda7fd-1357-4621-98f6-a0dd3789c3cf
+    ID: CCTRI-768-07b71138-a7e9-417d-a0f3-866dcde1536c
 
     Steps:
         1. Send request to enrich observe observable endpoint
@@ -17,142 +36,62 @@ def test_positive_sighting_domain(module_headers):
 
     Importance: Critical
     """
-    observable = {'type': 'domain', 'value': 'google.com'}
-    response = enrich_observe_observables(
-        payload=[observable],
+    observables = [{'type': observable_type, 'value': observable}]
+    response_from_all_modules = enrich_observe_observables(
+        payload=observables,
         **{'headers': module_headers}
-    )
-    sightings = get_observables(
-        response['data'], 'Google Chronicle')['data']['sightings']
+    )['data']
+
+    response_from_chronicle_module = get_observables(response_from_all_modules,
+                                                     MODULE_NAME)
+
+    assert response_from_chronicle_module['module'] == MODULE_NAME
+    assert response_from_chronicle_module['module_instance_id']
+    assert response_from_chronicle_module['module_type_id']
+
+    sightings = response_from_chronicle_module['data']['sightings']
     assert len(sightings['docs']) > 0
 
     for sighting in sightings['docs']:
-        assert sighting['confidence'] == 'High'
-        assert sighting['count']
-        assert sighting['id']
-        assert 'start_time' in sighting['observed_time']
-        assert 'schema_version' in sighting
+        assert sighting['schema_version']
         assert sighting['type'] == 'sighting'
-        assert sighting['source'] == 'Chronicle'
-        assert sighting['title'] == 'Found in Chronicle'
-        assert len(sighting['observables']) == 1
+        assert sighting['source'] == PRODUCER
+        assert sighting['confidence'] in CONFIDENCE
+        assert 0 < sighting['count'] <= CTR_ENTITIES_LIMIT
+        assert sighting['observed_time']['start_time'] == (
+            sighting['observed_time']['end_time'])
+        assert sighting['id'].startswith('transient:sighting-')
+        assert sighting['title'] == f'Found in {PRODUCER}'
+        assert sighting['internal'] is True
+        assert sighting['source_uri'].startswith(
+            f'{CHRONICLE_LINK}'
+            f'{URL_CATEGORY[observable_type]}?{observable_type}={observable}')
+        if observable_type == 'domain':
+            assert sighting['observables'][0]['type'] == observable_type
+            assert sighting['observables'][0]['value'].endswith(observable)
+        else:
+            assert sighting['observables'] == observables
+
+        if 'relations' in sighting:
+            for relation in sighting['relations']:
+                assert relation['origin'] == f'{PRODUCER} Enrichment Module'
+                assert relation['relation'] == RELATION_TYPE[observable_type]
+                assert relation['source']['value']
+                assert relation['source']['type']
+                if observable_type == 'domain':
+                    assert relation['related']['value'].split('.', 1)[1] == (
+                        observable)
+                if observable_type == 'ip':
+                    assert relation['related']['value'] == observable
+                assert relation['related']['type'] == observable_type
 
         for target in sighting['targets']:
             assert target['type'] == 'endpoint'
-            assert target['observables'][0]['type'] == 'hostname'
-            assert 'start_time' in target['observed_time']
+            for target_observable in target['observables']:
+                assert target_observable['value'].endswith(
+                    TARGETS_OBSERVABLES_VALUE)
+                assert target_observable['type'] == 'hostname'
+            assert target['observed_time']['start_time'] == (
+                target['observed_time']['end_time'])
 
-        # Here observables are presented by subdomains
-        assert sighting['observables'][0]['value'].endswith('google.com')
-        assert sighting['observables'][0]['type'] == 'domain'
-
-        # For subdomains There is field relations
-        # where observable with its subdomain are linked
-        # if received observable equals searched observable
-        # there is not field relations
-        if sighting['observables'][0]['value'] != 'google.com':
-            assert len(sighting['relations']) == 1
-            relation = sighting['relations'][0]
-            assert relation['origin'] == 'Chronicle Enrichment Module'
-            assert relation['relation'] == 'Supra-domain_Of'
-            assert relation['source'] == observable
-            assert 'value' in relation['related']
-            assert 'type' in relation['related']
-
-    assert sightings['count'] == len(sightings['docs'])
-
-
-def test_positive_sighting_ip(module_headers):
-    """Perform testing for enrich observe observables endpoint to get
-    sightings for observable with IP from Google Chronicle
-
-    ID: CCTRI-768-33cda5fd-1557-4625-98f5-a0dd3589c35a
-
-    Steps:
-        1. Send request to enrich observe observable endpoint
-
-    Expectedresults:
-        1. Check that data in response body contains expected sightings for
-            observable from Google Chronicle
-
-    Importance: Critical
-    """
-    observable = [{'type': 'ip', 'value': '1.1.1.1'}]
-    response = enrich_observe_observables(
-        payload=observable,
-        **{'headers': module_headers}
-    )
-    sightings = get_observables(
-        response['data'], 'Google Chronicle')['data']['sightings']
-    assert len(sightings['docs']) > 0
-
-    for sighting in sightings['docs']:
-        assert sighting['confidence'] == 'High'
-        assert sighting['count']
-        assert sighting['id']
-        assert 'start_time' in sighting['observed_time']
-        assert 'schema_version' in sighting
-        assert sighting['type'] == 'sighting'
-        assert sighting['source'] == 'Chronicle'
-        assert sighting['title'] == 'Found in Chronicle'
-        assert len(sighting['observables']) == 1
-        assert sighting['observables'] == observable
-
-        for target in sighting['targets']:
-            assert target['type'] == 'endpoint'
-            assert target['observables'][0]['type'] == 'hostname'
-            assert 'start_time' in target['observed_time']
-
-        assert len(sighting['relations']) == 1
-        relation = sighting['relations'][0]
-        assert relation['origin'] == 'Chronicle Enrichment Module'
-        assert relation['relation'] == 'Resolved_To'
-        assert relation['related'] == observable[0]
-        assert 'value' in relation['source']
-        assert 'type' in relation['source']
-
-    assert sightings['count'] == len(sightings['docs'])
-
-
-def test_positive_sighting_hash(module_headers):
-    """Perform testing for enrich observe observables endpoint to get
-    sightings for observable by md5 hash type from Google Chronicle module
-
-    ID: CCTRI-768-070314bd-d775-4463-94eb-f74cc3886384
-
-    Steps:
-        1. Send request to enrich observe observable endpoint
-
-    Expectedresults:
-        1. Check that data in response body contains expected sightings for
-            observable from Google Chronicle
-
-    Importance: Critical
-    """
-    observable = [{'type': 'md5', 'value': '34d5ea586a61b0aba512c0cb1d3d8b15'}]
-    response = enrich_observe_observables(
-        payload=observable,
-        **{'headers': module_headers}
-    )
-    sightings = get_observables(
-        response['data'], 'Google Chronicle')['data']['sightings']
-    assert len(sightings['docs']) > 0
-
-    for sighting in sightings['docs']:
-        assert sighting['confidence'] == 'High'
-        assert sighting['count']
-        assert sighting['id']
-        assert 'start_time' in sighting['observed_time']
-        assert 'schema_version' in sighting
-        assert sighting['type'] == 'sighting'
-        assert sighting['source'] == 'Chronicle'
-        assert sighting['title'] == 'Found in Chronicle'
-        assert len(sighting['observables']) == 1
-        assert sighting['observables'] == observable
-
-        for target in sighting['targets']:
-            assert target['type'] == 'endpoint'
-            assert target['observables'][0]['type'] == 'hostname'
-            assert 'start_time' in target['observed_time']
-
-    assert sightings['count'] == len(sightings['docs'])
+    assert sightings['count'] == len(sightings['docs']) <= CTR_ENTITIES_LIMIT
