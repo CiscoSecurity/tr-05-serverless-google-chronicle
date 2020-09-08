@@ -14,3 +14,4 @@ RELATION_TYPE = {
     'domain': 'Supra-domain_Of'
 }
 TARGETS_OBSERVABLES_VALUE = ('pc', 'laptop')
+TARGETS_OBSERVABLES_TYPES = ('ip', 'hostname')

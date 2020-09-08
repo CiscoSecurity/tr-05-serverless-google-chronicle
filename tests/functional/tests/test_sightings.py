@@ -9,7 +9,8 @@ from tests.functional.tests.constants import (
     CHRONICLE_LINK,
     URL_CATEGORY,
     RELATION_TYPE,
-    TARGETS_OBSERVABLES_VALUE
+    TARGETS_OBSERVABLES_VALUE,
+    TARGETS_OBSERVABLES_TYPES
 )
 
 
@@ -88,9 +89,10 @@ def test_positive_sighting(module_headers, observable, observable_type):
         for target in sighting['targets']:
             assert target['type'] == 'endpoint'
             for target_observable in target['observables']:
-                assert target_observable['value'].endswith(
-                    TARGETS_OBSERVABLES_VALUE)
-                assert target_observable['type'] == 'hostname'
+                assert target_observable['type'] in TARGETS_OBSERVABLES_TYPES
+                if target_observable['type'] == 'hostname':
+                    assert target_observable['value'].endswith(
+                        TARGETS_OBSERVABLES_VALUE)
             assert target['observed_time']['start_time'] == (
                 target['observed_time']['end_time'])
 
