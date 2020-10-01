@@ -9,7 +9,11 @@ from tests.functional.tests.constants import MODULE_NAME
     (
      ('ip', '4.3.1.4'),
      ('domain', 'wp.org'),
-     ('md5', 'd41d8cd98f00b204e9800998ecf8427e')
+     ('md5', 'd41d8cd98f00b204e9800998ecf8427e'),
+     ('ipv6', '2600:387:a:904::18'),
+     ('sha1', 'A94A8FE5CCB19BA61C4C0873D391E987982FBBD3'),
+     ('sha256',
+      '824916EE370035D2FCED9D4D216D6EA45E5F3866590130C1FA5FDA652F952529')
      )
 )
 def test_positive_smoke_empty_observables(
