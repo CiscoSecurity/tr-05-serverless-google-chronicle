@@ -10,7 +10,7 @@ from tests.functional.tests.constants import (
 @pytest.mark.parametrize(
     'observable_type, observable',
     (
-     ('ip', 'urirmpyp.top'),
+     ('ip', 'securecorp.club'),
      ('domain', 'urirmpyp.top')
      )
 )
