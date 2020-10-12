@@ -7,8 +7,8 @@ from tests.functional.tests.constants import MODULE_NAME
 @pytest.mark.parametrize(
     'observable_type, observable',
     (
-     ('ip', '4.3.1.4'),
-     ('domain', 'wp.org'),
+     #('ip', '4.3.1.4'),
+     ('domain', '17ebook.com'),
      ('md5', 'd41d8cd98f00b204e9800998ecf8427e'),
      ('ipv6', '2600:387:a:904::18'),
      ('sha1', 'A94A8FE5CCB19BA61C4C0873D391E987982FBBD3'),
