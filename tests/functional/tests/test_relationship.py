@@ -11,7 +11,7 @@ from tests.functional.tests.constants import (
     'observable_type, observable',
     (
      #('ip', '1.1.1.1'),
-     ('domain', 'securecorp.club')
+     ('domain', 'urirmpyp.top')
      )
 )
 def test_positive_relationship(module_headers, observable_type, observable):
