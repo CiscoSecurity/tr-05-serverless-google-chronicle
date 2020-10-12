@@ -10,8 +10,8 @@ from tests.functional.tests.constants import (
 @pytest.mark.parametrize(
     'observable_type, observable',
     (
-     ('ip', '1.1.1.1'),
-     ('domain', 'wp.com')
+     #('ip', '1.1.1.1'),
+     ('domain', '17ebook.com')
      )
 )
 def test_positive_relationship(module_headers, observable_type, observable):
