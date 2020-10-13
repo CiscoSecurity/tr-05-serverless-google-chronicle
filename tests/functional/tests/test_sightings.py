@@ -14,14 +14,15 @@ from tests.functional.tests.constants import (
 )
 
 
-@pytest.mark.parametrize(
-    'observable_type, observable',
-    (
-     #('ip', '1.1.1.1'),
-     ('domain', '17ebook.com'),
-     ('md5', '34d5ea586a61b0aba512c0cb1d3d8b15')
-     )
-)
+@pytest.mark.skip('switched off till find valid data')
+# @pytest.mark.parametrize(
+#     'observable_type, observable',
+#     (
+#      ('ip', '1.1.1.1'),
+#      ('domain', 'wp.com'),
+#      ('md5', '34d5ea586a61b0aba512c0cb1d3d8b15')
+#      )
+# )
 def test_positive_sighting(module_headers, observable, observable_type):
     """Perform testing for enrich observe observables endpoint to get
     sightings for observable from Google Chronicle
