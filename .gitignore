@@ -18,3 +18,4 @@ project.properties
 
 # Reporting
 artifacts/
+/venv/

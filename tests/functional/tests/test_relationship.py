@@ -7,13 +7,14 @@ from tests.functional.tests.constants import (
 )
 
 
-@pytest.mark.parametrize(
-    'observable_type, observable',
-    (
-     ('ip', '1.1.1.1'),
-     ('domain', 'wp.com')
-     )
-)
+@pytest.mark.skip('switched off till find valid data')
+# @pytest.mark.parametrize(
+#     'observable_type, observable',
+#     (
+#      ('ip', '1.1.1.1'),
+#      ('domain', 'wp.com')
+#      )
+# )
 def test_positive_relationship(module_headers, observable_type, observable):
     """Perform testing for enrich observe observables endpoint to get
     relationship for observable from Google Chronicle module
