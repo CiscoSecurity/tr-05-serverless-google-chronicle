@@ -6,7 +6,7 @@ class Config(object):
 
     AUTH_SCOPES = ['https://www.googleapis.com/auth/chronicle-backstory']
 
-    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECRET_KEY = os.environ.get('SECRET_KEY', None)
 
     CTR_ENTITIES_DEFAULT_LIMIT = 100
     CTR_ENTITIES_LIMIT = CTR_ENTITIES_DEFAULT_LIMIT
