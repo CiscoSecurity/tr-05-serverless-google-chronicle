@@ -17,12 +17,12 @@ def route(request):
 
 
 def test_health_call_without_jwt_failure(
-        route, client, invalid_jwt_expected_payload
+        route, client, authorization_is_missing_expected_payload
 ):
     response = client.post(route)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json == invalid_jwt_expected_payload
+    assert response.json == authorization_is_missing_expected_payload
 
 
 def test_health_call_with_invalid_jwt_failure(

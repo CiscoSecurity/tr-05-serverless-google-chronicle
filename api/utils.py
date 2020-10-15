@@ -1,29 +1,48 @@
 from authlib.jose import jwt
-from authlib.jose.errors import JoseError
+from authlib.jose.errors import JoseError, BadSignatureError, DecodeError
 from flask import request, current_app, jsonify, g
 from google.oauth2 import service_account
 from googleapiclient import _auth
 
 from api.errors import (
-    InvalidJWTError,
+    AuthorizationError,
     InvalidChronicleCredentialsError,
     InvalidArgumentError
 )
 
 
-def get_jwt():
-    """
-    Parse the incoming request's Authorization Bearer JWT for some credentials.
-    Validate its signature against the application's secret key.
-
-    """
-
+def get_auth_token() -> [str, Exception]:
+    """Parse the incoming request's Authorization header and Validate it."""
+    expected_errors = {
+        KeyError: 'Authorization header is missing',
+        AssertionError: 'Wrong authorization type'
+    }
     try:
         scheme, token = request.headers['Authorization'].split()
         assert scheme.lower() == 'bearer'
-        return jwt.decode(token, current_app.config['SECRET_KEY'])
-    except (KeyError, ValueError, AssertionError, JoseError):
-        raise InvalidJWTError()
+        return token
+    except tuple(expected_errors) as error:
+        raise AuthorizationError(expected_errors[error.__class__])
+
+
+def get_jwt() -> [str, Exception]:
+    """
+    Get Authorization token and validate its signature
+    according the application's secret key .
+    """
+    expected_errors = {
+        # KeyError: 'Wrong JWT payload structure',
+        TypeError: '<SECRET_KEY> is missing',
+        BadSignatureError: 'Failed to decode JWT with provided key',
+        DecodeError: 'Wrong JWT structure'
+    }
+    token = get_auth_token()
+    try:
+        payload = jwt.decode(token, current_app.config['SECRET_KEY'])
+        return payload
+    except tuple(expected_errors) as error:
+        message = expected_errors[error.__class__]
+        raise AuthorizationError(message)
 
 
 def get_chronicle_http_client(account_info):

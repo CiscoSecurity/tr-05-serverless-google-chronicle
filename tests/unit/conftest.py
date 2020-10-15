@@ -7,7 +7,11 @@ from authlib.jose import jwt
 from pytest import fixture
 
 from api.errors import (
-    PERMISSION_DENIED, INVALID_ARGUMENT, TOO_MANY_REQUESTS, UNKNOWN
+    PERMISSION_DENIED,
+    INVALID_ARGUMENT,
+    TOO_MANY_REQUESTS,
+    UNKNOWN,
+    AUTH_ERROR
 )
 from app import app
 
@@ -137,7 +141,8 @@ def invalid_jwt(valid_jwt, secret_key):
 
     def jwt_encode(d: dict) -> str:
         from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode('ascii')
+        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode(
+            'ascii')
 
     payload = jwt_decode(payload)
 
@@ -165,8 +170,25 @@ def invalid_jwt_expected_payload(route):
         route,
         {
             'errors': [
-                {'code': PERMISSION_DENIED,
-                 'message': 'Invalid Authorization Bearer JWT.',
+                {'code': AUTH_ERROR,
+                 'message': 'Authorization failed: Failed to decode JWT '
+                            'with provided key',
+                 'type': 'fatal'}
+            ],
+            'data': {}
+        }
+    )
+
+
+@fixture(scope='module')
+def authorization_is_missing_expected_payload(route):
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {'code': AUTH_ERROR,
+                 'message': 'Authorization failed: '
+                            'Authorization header is missing',
                  'type': 'fatal'}
             ],
             'data': {}
