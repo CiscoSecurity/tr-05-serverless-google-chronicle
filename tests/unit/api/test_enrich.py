@@ -120,8 +120,8 @@ def test_enrich_call_with_bad_request_success(
         bad_request_expected_payload
 ):
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
-            patch('api.utils.service_account.'
-                  'Credentials.from_service_account_info'):
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
         authorized_http_mock.return_value = ClientMock(
             chronicle_response_bad_request
         )
@@ -171,8 +171,8 @@ def test_enrich_call_success_with_extended_error_handling(
         success_enrich_body, unauthorized_creds_body
 ):
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
-            patch('api.utils.service_account.'
-                  'Credentials.from_service_account_info'):
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
         authorized_http_mock.return_value = ClientMock(
             side_effect=[
                 chronicle_response_ok,
