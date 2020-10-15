@@ -67,8 +67,8 @@ def test_enrich_call_with_unauthorized_creds_failure(
         unauthorized_creds_expected_payload
 ):
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
-            patch('api.utils.service_account.'
-                  'Credentials.from_service_account_info'):
+        patch('api.utils.service_account.'
+              'Credentials.from_service_account_info'):
         authorized_http_mock.return_value = ClientMock(
             chronicle_response_unauthorized_creds
         )
