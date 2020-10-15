@@ -1,5 +1,5 @@
 from authlib.jose import jwt
-from authlib.jose.errors import JoseError, BadSignatureError, DecodeError
+from authlib.jose.errors import BadSignatureError, DecodeError
 from flask import request, current_app, jsonify, g
 from google.oauth2 import service_account
 from googleapiclient import _auth
