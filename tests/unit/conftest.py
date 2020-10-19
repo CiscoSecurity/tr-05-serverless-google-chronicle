@@ -123,10 +123,29 @@ def chronicle_response_ok(secret_key):
 
 
 @fixture(scope='session')
-def valid_jwt(secret_key):
+def wrong_payload_structure_jwt(secret_key):
     header = {'alg': 'HS256'}
 
     payload = {'username': 'gdavoian', 'superuser': False}
+
+    return jwt.encode(header, payload, secret_key).decode('ascii')
+
+
+@fixture(scope='session')
+def valid_jwt(secret_key):
+    header = {'alg': 'HS256'}
+
+    payload = {
+        "type": "<CREDENTIALS_TYPE>",
+        "project_id": "<PROJECT_ID>",
+        "private_key_id": "<PRIVATE_KEY_ID>",
+        "private_key": "<PRIVATE_KEY>",
+        "client_id": "<CLIENT_ID>",
+        "auth_uri": "<AUTH_URI>",
+        "token_uri": "<TOKEN_URI>",
+        "auth_provider_x509_cert_url": "<AUTH_PROVIDER_X509_CERT_URL>",
+        "client_x509_cert_url": "<CLIENT_CERT_URL>"
+    }
 
     return jwt.encode(header, payload, secret_key).decode('ascii')
 
@@ -154,6 +173,11 @@ def invalid_jwt(valid_jwt, secret_key):
     return '.'.join([header, payload, signature])
 
 
+@fixture(scope='module')
+def wrong_jwt_structure():
+    return 'jwt_with_wrong_structure'
+
+
 def expected_payload(r, body):
     if r.endswith('/deliberate/observables'):
         return {'data': {}}
@@ -165,35 +189,33 @@ def expected_payload(r, body):
 
 
 @fixture(scope='module')
-def invalid_jwt_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': AUTH_ERROR,
-                 'message': 'Authorization failed: Failed to decode JWT '
-                            'with provided key',
-                 'type': 'fatal'}
-            ],
-            'data': {}
+def authorization_errors_expected_payload(route):
+    def _make_payload_message(test_name):
+        messages = {
+            'authorization_header_failure': 'Authorization header is missing',
+            'wrong_authorization_type': 'Wrong authorization type',
+            'wrong_jwt_structure': 'Wrong JWT structure',
+            'jwt_encoded_by_wrong_key':
+                'Failed to decode JWT with provided key',
+            'wrong_jwt_payload_structure': 'Wrong JWT payload structure',
+            'missed_secret_key': '<SECRET_KEY> is missing',
+            'invalid_creds_failure': 'Wrong structure'
         }
-    )
-
-
-@fixture(scope='module')
-def authorization_is_missing_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': AUTH_ERROR,
-                 'message': 'Authorization failed: '
-                            'Authorization header is missing',
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
+        return expected_payload(
+            route,
+            {
+                "data": {},
+                "errors": [
+                    {
+                        "code": AUTH_ERROR,
+                        "message": f'Authorization failed: '
+                                   f'{messages[test_name]}',
+                        "type": "fatal"
+                    }
+                ]
+            }
+        )
+    return _make_payload_message
 
 
 @fixture(scope='module')
@@ -212,22 +234,6 @@ def unauthorized_creds_body():
 @fixture(scope='module')
 def unauthorized_creds_expected_payload(route, unauthorized_creds_body):
     return expected_payload(route, unauthorized_creds_body)
-
-
-@fixture(scope='module')
-def invalid_creds_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': PERMISSION_DENIED,
-                 'message': ('Google Chronicle Authorization failed:'
-                             ' Wrong structure.'),
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
 
 
 @fixture(scope='module')

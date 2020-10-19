@@ -69,14 +69,6 @@ class AuthorizationError(TRFormattedError):
         )
 
 
-class InvalidChronicleCredentialsError(TRFormattedError):
-    def __init__(self, error):
-        super().__init__(
-            PERMISSION_DENIED,
-            f'Google Chronicle Authorization failed: {str(error)}.'
-        )
-
-
 class InvalidArgumentError(TRFormattedError):
     def __init__(self, error):
         super().__init__(

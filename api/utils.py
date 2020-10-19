@@ -6,7 +6,6 @@ from googleapiclient import _auth
 
 from api.errors import (
     AuthorizationError,
-    InvalidChronicleCredentialsError,
     InvalidArgumentError
 )
 
@@ -25,13 +24,25 @@ def get_auth_token() -> [str, Exception]:
         raise AuthorizationError(expected_errors[error.__class__])
 
 
-def get_jwt() -> [str, Exception]:
+def get_jwt() -> [dict, Exception]:
     """
     Get Authorization token and validate its signature
     according the application's secret key .
     """
+    jwt_payload_keys = (
+        'type',
+        'project_id',
+        'private_key_id',
+        'private_key',
+        'client_email',
+        'client_id',
+        'auth_uri',
+        'token_uri',
+        'auth_provider_x509_cert_url',
+        'client_x509_cert_url'
+    )
     expected_errors = {
-        # KeyError: 'Wrong JWT payload structure',
+        AssertionError: 'Wrong JWT payload structure',
         TypeError: '<SECRET_KEY> is missing',
         BadSignatureError: 'Failed to decode JWT with provided key',
         DecodeError: 'Wrong JWT structure'
@@ -39,6 +50,7 @@ def get_jwt() -> [str, Exception]:
     token = get_auth_token()
     try:
         payload = jwt.decode(token, current_app.config['SECRET_KEY'])
+        assert set(jwt_payload_keys) == set(payload)
         return payload
     except tuple(expected_errors) as error:
         message = expected_errors[error.__class__]
@@ -56,7 +68,7 @@ def get_chronicle_http_client(account_info):
             account_info, scopes=current_app.config['AUTH_SCOPES']
         )
     except ValueError as e:
-        raise InvalidChronicleCredentialsError(str(e))
+        raise AuthorizationError(str(e))
 
     return _auth.authorized_http(credentials)
 

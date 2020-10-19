@@ -23,22 +23,81 @@ def invalid_json():
     return [{'type': 'domain'}]
 
 
-def test_enrich_call_without_jwt_failure(
-        route, client, authorization_is_missing_expected_payload
+def test_enrich_call_with_authorization_header_failure(
+        route, client,
+        authorization_errors_expected_payload
 ):
     response = client.post(route)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_is_missing_expected_payload
+    assert response.json == authorization_errors_expected_payload(
+        'authorization_header_failure'
+    )
 
 
-def test_enrich_call_with_invalid_jwt_failure(
-        route, client, invalid_jwt, invalid_jwt_expected_payload
+def test_enrich_call_with_wrong_authorization_type(
+        route, client, valid_jwt,
+        authorization_errors_expected_payload
+):
+    response = client.post(route, headers=headers(valid_jwt,
+                                                  auth_type='wrong_type'))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == authorization_errors_expected_payload(
+        'wrong_authorization_type'
+    )
+
+
+def test_enrich_call_with_wrong_jwt_structure(
+        route, client, wrong_jwt_structure,
+        authorization_errors_expected_payload
+):
+    response = client.post(route, headers=headers(wrong_jwt_structure))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == authorization_errors_expected_payload(
+        'wrong_jwt_structure'
+    )
+
+
+def test_enrich_call_with_jwt_encoded_by_wrong_key(
+        route, client, invalid_jwt,
+        authorization_errors_expected_payload
 ):
     response = client.post(route, headers=headers(invalid_jwt))
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json == invalid_jwt_expected_payload
+    assert response.json == authorization_errors_expected_payload(
+        'jwt_encoded_by_wrong_key'
+    )
+
+
+def test_enrich_call_with_wrong_jwt_payload_structure(
+        route, client, wrong_payload_structure_jwt,
+        authorization_errors_expected_payload
+):
+    response = client.post(route,
+                           headers=headers(wrong_payload_structure_jwt))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == authorization_errors_expected_payload(
+        'wrong_jwt_payload_structure'
+    )
+
+
+def test_enrich_call_with_missed_secret_key(
+        route, client, valid_jwt,
+        authorization_errors_expected_payload
+):
+    right_secret_key = client.application.secret_key
+    client.application.secret_key = None
+    response = client.post(route, headers=headers(valid_jwt))
+    client.application.secret_key = right_secret_key
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json == authorization_errors_expected_payload(
+        'missed_secret_key'
+    )
 
 
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
