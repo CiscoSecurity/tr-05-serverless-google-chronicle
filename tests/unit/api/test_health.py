@@ -24,7 +24,7 @@ def test_health_call_with_authorization_header_failure(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'authorization_header_failure'
+        'Authorization header is missing'
     )
 
 
@@ -38,7 +38,7 @@ def test_health_call_with_wrong_authorization_type(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'wrong_authorization_type'
+        'Wrong authorization type'
     )
 
 
@@ -50,7 +50,7 @@ def test_health_call_with_wrong_jwt_structure(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'wrong_jwt_structure'
+        'Wrong JWT structure'
     )
 
 
@@ -62,7 +62,7 @@ def test_health_call_with_jwt_encoded_by_wrong_key(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'jwt_encoded_by_wrong_key'
+        'Failed to decode JWT with provided key'
     )
 
 
@@ -75,7 +75,7 @@ def test_health_call_with_wrong_jwt_payload_structure(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'wrong_jwt_payload_structure'
+        'Wrong JWT payload structure'
     )
 
 
@@ -90,7 +90,7 @@ def test_health_call_with_missed_secret_key(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == authorization_errors_expected_payload(
-        'missed_secret_key'
+        '<SECRET_KEY> is missing'
     )
 
 
@@ -100,12 +100,12 @@ def test_health_call_with_invalid_creds_failure(
 ):
     with patch('api.utils.service_account.'
                'Credentials.from_service_account_info',
-               side_effect=ValueError("Wrong structure")):
+               side_effect=ValueError("Wrong credentials")):
         response = client.post(route, headers=headers(valid_jwt))
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == authorization_errors_expected_payload(
-            'invalid_creds_failure'
+            'Wrong credentials'
         )
 
 

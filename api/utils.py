@@ -11,7 +11,9 @@ from api.errors import (
 
 
 def get_auth_token() -> [str, Exception]:
-    """Parse the incoming request's Authorization header and Validate it."""
+    """
+    Parse and validate incoming request Authorization header.
+    """
     expected_errors = {
         KeyError: 'Authorization header is missing',
         AssertionError: 'Wrong authorization type'
@@ -26,8 +28,7 @@ def get_auth_token() -> [str, Exception]:
 
 def get_jwt() -> [dict, Exception]:
     """
-    Get Authorization token and validate its signature
-    according the application's secret key .
+    Decode Authorization token. Extract and validate credentials.
     """
     jwt_payload_keys = (
         'type',
