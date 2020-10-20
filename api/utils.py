@@ -1,29 +1,61 @@
 from authlib.jose import jwt
-from authlib.jose.errors import JoseError
+from authlib.jose.errors import BadSignatureError, DecodeError
 from flask import request, current_app, jsonify, g
 from google.oauth2 import service_account
 from googleapiclient import _auth
 
 from api.errors import (
-    InvalidJWTError,
-    InvalidChronicleCredentialsError,
+    AuthorizationError,
     InvalidArgumentError
 )
 
 
-def get_jwt():
+def get_auth_token() -> [str, Exception]:
     """
-    Parse the incoming request's Authorization Bearer JWT for some credentials.
-    Validate its signature against the application's secret key.
-
+    Parse and validate incoming request Authorization header.
     """
-
+    expected_errors = {
+        KeyError: 'Authorization header is missing',
+        AssertionError: 'Wrong authorization type'
+    }
     try:
         scheme, token = request.headers['Authorization'].split()
         assert scheme.lower() == 'bearer'
-        return jwt.decode(token, current_app.config['SECRET_KEY'])
-    except (KeyError, ValueError, AssertionError, JoseError):
-        raise InvalidJWTError()
+        return token
+    except tuple(expected_errors) as error:
+        raise AuthorizationError(expected_errors[error.__class__])
+
+
+def get_jwt() -> [dict, Exception]:
+    """
+    Decode Authorization token. Extract and validate credentials.
+    """
+    jwt_payload_keys = (
+        'type',
+        'project_id',
+        'private_key_id',
+        'private_key',
+        'client_email',
+        'client_id',
+        'auth_uri',
+        'token_uri',
+        'auth_provider_x509_cert_url',
+        'client_x509_cert_url'
+    )
+    expected_errors = {
+        AssertionError: 'Wrong JWT payload structure',
+        TypeError: '<SECRET_KEY> is missing',
+        BadSignatureError: 'Failed to decode JWT with provided key',
+        DecodeError: 'Wrong JWT structure'
+    }
+    token = get_auth_token()
+    try:
+        payload = jwt.decode(token, current_app.config['SECRET_KEY'])
+        assert set(jwt_payload_keys) == set(payload)
+        return payload
+    except tuple(expected_errors) as error:
+        message = expected_errors[error.__class__]
+        raise AuthorizationError(message)
 
 
 def get_chronicle_http_client(account_info):
@@ -37,7 +69,7 @@ def get_chronicle_http_client(account_info):
             account_info, scopes=current_app.config['AUTH_SCOPES']
         )
     except ValueError as e:
-        raise InvalidChronicleCredentialsError(str(e))
+        raise AuthorizationError(str(e))
 
     return _auth.authorized_http(credentials)
 

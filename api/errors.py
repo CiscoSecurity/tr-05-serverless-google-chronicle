@@ -6,6 +6,7 @@ INVALID_ARGUMENT = 'invalid argument'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
 TOO_MANY_REQUESTS = 'too many requests'
+AUTH_ERROR = 'authorization error'
 
 
 class TRFormattedError(Exception):
@@ -60,19 +61,11 @@ class UnexpectedChronicleResponseError(TRFormattedError):
             super().__init__(status, f"{title}: {message}")
 
 
-class InvalidJWTError(TRFormattedError):
-    def __init__(self):
+class AuthorizationError(TRFormattedError):
+    def __init__(self, message):
         super().__init__(
-            PERMISSION_DENIED,
-            'Invalid Authorization Bearer JWT.'
-        )
-
-
-class InvalidChronicleCredentialsError(TRFormattedError):
-    def __init__(self, error):
-        super().__init__(
-            PERMISSION_DENIED,
-            f'Google Chronicle Authorization failed: {str(error)}.'
+            AUTH_ERROR,
+            f'Authorization failed: {message}'
         )
 
 

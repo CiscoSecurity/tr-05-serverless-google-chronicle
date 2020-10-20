@@ -265,6 +265,7 @@ header set to `Bearer <JWT>`.
   "project_id": "<PROJECT_ID>",
   "private_key_id": "<PRIVATE_KEY_ID>",
   "private_key": "<PRIVATE_KEY>",
+  "client_email": "<CLIENT_EMAIL>",
   "client_id": "<CLIENT_ID>",
   "auth_uri": "<AUTH_URI>",
   "token_uri": "<TOKEN_URI>",

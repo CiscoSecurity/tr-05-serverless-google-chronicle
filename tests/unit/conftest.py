@@ -7,7 +7,11 @@ from authlib.jose import jwt
 from pytest import fixture
 
 from api.errors import (
-    PERMISSION_DENIED, INVALID_ARGUMENT, TOO_MANY_REQUESTS, UNKNOWN
+    PERMISSION_DENIED,
+    INVALID_ARGUMENT,
+    TOO_MANY_REQUESTS,
+    UNKNOWN,
+    AUTH_ERROR
 )
 from app import app
 
@@ -119,10 +123,30 @@ def chronicle_response_ok(secret_key):
 
 
 @fixture(scope='session')
-def valid_jwt(secret_key):
+def wrong_payload_structure_jwt(secret_key):
     header = {'alg': 'HS256'}
 
     payload = {'username': 'gdavoian', 'superuser': False}
+
+    return jwt.encode(header, payload, secret_key).decode('ascii')
+
+
+@fixture(scope='session')
+def valid_jwt(secret_key):
+    header = {'alg': 'HS256'}
+
+    payload = {
+        "type": "<CREDENTIALS_TYPE>",
+        "project_id": "<PROJECT_ID>",
+        "private_key_id": "<PRIVATE_KEY_ID>",
+        "private_key": "<PRIVATE_KEY>",
+        "client_email": "<CLIENT_EMAIL>",
+        "client_id": "<CLIENT_ID>",
+        "auth_uri": "<AUTH_URI>",
+        "token_uri": "<TOKEN_URI>",
+        "auth_provider_x509_cert_url": "<AUTH_PROVIDER_X509_CERT_URL>",
+        "client_x509_cert_url": "<CLIENT_CERT_URL>"
+    }
 
     return jwt.encode(header, payload, secret_key).decode('ascii')
 
@@ -137,7 +161,8 @@ def invalid_jwt(valid_jwt, secret_key):
 
     def jwt_encode(d: dict) -> str:
         from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode('ascii')
+        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode(
+            'ascii')
 
     payload = jwt_decode(payload)
 
@@ -147,6 +172,11 @@ def invalid_jwt(valid_jwt, secret_key):
     payload = jwt_encode(payload)
 
     return '.'.join([header, payload, signature])
+
+
+@fixture(scope='module')
+def wrong_jwt_structure():
+    return 'jwt_with_wrong_structure'
 
 
 def expected_payload(r, body):
@@ -160,18 +190,23 @@ def expected_payload(r, body):
 
 
 @fixture(scope='module')
-def invalid_jwt_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': PERMISSION_DENIED,
-                 'message': 'Invalid Authorization Bearer JWT.',
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
+def authorization_errors_expected_payload(route):
+    def _make_payload_message(message):
+        return expected_payload(
+            route,
+            {
+                "data": {},
+                "errors": [
+                    {
+                        "code": AUTH_ERROR,
+                        "message": f'Authorization failed: '
+                                   f'{message}',
+                        "type": "fatal"
+                    }
+                ]
+            }
+        )
+    return _make_payload_message
 
 
 @fixture(scope='module')
@@ -190,22 +225,6 @@ def unauthorized_creds_body():
 @fixture(scope='module')
 def unauthorized_creds_expected_payload(route, unauthorized_creds_body):
     return expected_payload(route, unauthorized_creds_body)
-
-
-@fixture(scope='module')
-def invalid_creds_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': PERMISSION_DENIED,
-                 'message': ('Google Chronicle Authorization failed:'
-                             ' Wrong structure.'),
-                 'type': 'fatal'}
-            ],
-            'data': {}
-        }
-    )
 
 
 @fixture(scope='module')
