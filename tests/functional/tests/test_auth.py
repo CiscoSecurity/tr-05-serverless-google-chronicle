@@ -24,7 +24,6 @@ def test_relay_auth_positive(relay_api):
 @pytest.mark.parametrize(
     'wrong_token,message,code',
     (
-        # ('', 'Invalid Authorization Bearer JWT.'),
         ('123', 'Authorization failed: Wrong JWT structure',
          'authorization error'),
         (os.environ['ANOTHER_KEY'],
