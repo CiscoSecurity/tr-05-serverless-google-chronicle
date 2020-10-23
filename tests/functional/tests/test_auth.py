@@ -54,5 +54,5 @@ def test_relay_auth_negative(relay_api_without_token, wrong_token, message,
     error = response.json()["errors"][0]
 
     assert error['type'] == 'fatal'
-    assert error['code'] == 'permission denied'
+    assert error['code'] == code
     assert error['message'].startswith(message)
