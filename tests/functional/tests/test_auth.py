@@ -28,7 +28,8 @@ def test_relay_auth_positive(relay_api):
         ('123', 'Invalid Authorization Bearer JWT.', 'authorization error'),
         (os.environ['ANOTHER_KEY'],
          'Unexpected response from Google Chronicle: '
-         'Backstory API has not been used in project ', 'q')
+         'Backstory API has not been used in project ',
+         'permission denied')
      )
 )
 def test_relay_auth_negative(relay_api_without_token, wrong_token, message,
