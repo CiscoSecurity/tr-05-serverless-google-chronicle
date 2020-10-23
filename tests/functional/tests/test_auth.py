@@ -25,7 +25,8 @@ def test_relay_auth_positive(relay_api):
     'wrong_token,message,code',
     (
         # ('', 'Invalid Authorization Bearer JWT.'),
-        ('123', 'Invalid Authorization Bearer JWT.', 'authorization error'),
+        ('123', 'Authorization failed: Wrong JWT structure',
+         'authorization error'),
         (os.environ['ANOTHER_KEY'],
          'Unexpected response from Google Chronicle: '
          'Backstory API has not been used in project ',
