@@ -24,7 +24,7 @@ def test_relay_auth_positive(relay_api):
 @pytest.mark.parametrize(
     'wrong_token,message',
     (
-        ('', 'Invalid Authorization Bearer JWT.'),
+        # ('', 'Invalid Authorization Bearer JWT.'),
         ('123', 'Invalid Authorization Bearer JWT.'),
         (os.environ['ANOTHER_KEY'],
          'Unexpected response from Google Chronicle: '
