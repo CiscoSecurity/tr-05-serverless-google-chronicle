@@ -22,15 +22,17 @@ def test_relay_auth_positive(relay_api):
 
 
 @pytest.mark.parametrize(
-    'wrong_token,message',
+    'wrong_token,message,status_code,code_message',
     (
-        ('123', 'Invalid Authorization Bearer JWT.'),
-        (os.environ['ANOTHER_KEY'],
-         'Unexpected response from Google Chronicle: '
-         'Backstory API has not been used in project ')
+        ('', 'Something went wrong.', 500, 'Something went wrong.'),
+        # ('123', 'Invalid Authorization Bearer JWT.'),
+        # (os.environ['ANOTHER_KEY'],
+        #  'Unexpected response from Google Chronicle: '
+        #  'Backstory API has not been used in project ')
      )
 )
-def test_relay_auth_negative(relay_api_without_token, wrong_token, message):
+def test_relay_auth_negative(relay_api_without_token, wrong_token, message,
+                             status_code, code_message):
     """Perform testing for relay health endpoint to check
     status auth for Google Chronicle with wrong token
 
@@ -48,9 +50,9 @@ def test_relay_auth_negative(relay_api_without_token, wrong_token, message):
         '',
         **{'headers': {'Authorization': 'Bearer {}'.format(wrong_token)}}
     )
-    assert response.status_code == 200
+    assert response.status_code == status_code
     error = response.json()["errors"][0]
 
     assert error['type'] == 'fatal'
-    assert error['code'] == 'authorization error'
+    assert error['code'] == code_message
     assert error['message'].startswith(message)
