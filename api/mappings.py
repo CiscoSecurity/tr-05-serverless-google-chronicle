@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from uuid import uuid4
+from uuid import uuid4, uuid5
+
+from flask import current_app
 
 from api.utils import all_subclasses
 
@@ -178,11 +180,18 @@ class Mapping(metaclass=ABCMeta):
         # from the one we queried for. In general case - skip such data.
         return [self.observable] if self.observable in observables else []
 
+    @staticmethod
+    def get_transient_id(entity_type: str, base_value=None) -> str:
+        uuid = (uuid5(current_app.config['NAMESPACE_BASE'], base_value)
+                if base_value else uuid4())
+        return f'transient:{entity_type}-{uuid}'
+
     def extract_indicators(self, ioc_details, limit):
         def indicator(source):
             r = {
                 **CTIM_DEFAULTS,
-                'id': f'transient:indicator-{uuid4()}',
+                'id':
+                    self.get_transient_id('indicator', source.get('category')),
                 'type': 'indicator',
                 'producer': 'Chronicle',
                 'valid_time': {},

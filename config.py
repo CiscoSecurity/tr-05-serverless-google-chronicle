@@ -1,4 +1,5 @@
 import os
+from uuid import NAMESPACE_X500
 
 
 class Config(object):
@@ -22,3 +23,5 @@ class Config(object):
 
     USER_AGENT = ('Cisco Threat Response Integrations '
                   '<tr-integrations-support@cisco.com>')
+
+    NAMESPACE_BASE = NAMESPACE_X500
