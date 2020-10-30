@@ -35,7 +35,7 @@ def test_positive_relationship(module_headers, observable_type, observable):
     response_from_all_modules = enrich_observe_observables(
         payload=observables,
         **{'headers': module_headers}
-    )['data']
+    )
 
     response_from_chronicle_module = get_observables(response_from_all_modules,
                                                      MODULE_NAME)
