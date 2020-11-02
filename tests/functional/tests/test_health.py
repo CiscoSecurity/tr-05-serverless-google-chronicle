@@ -20,7 +20,8 @@ def test_positive_smoke_enrich_health(module_headers):
     """
     response_from_all_modules = enrich_post_health(
         **{'headers': module_headers}
-    )['data']
+    )
+
     response_from_chronicle_module = get_observables(response_from_all_modules,
                                                      MODULE_NAME)
     assert response_from_chronicle_module['data'] == {'status': 'ok'}
