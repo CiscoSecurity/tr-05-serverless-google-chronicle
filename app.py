@@ -26,7 +26,7 @@ def handle_error(exception):
     ])
 
     response = jsonify(code=code, message=message, reason=reason)
-    app.logger.error(response)
+    app.logger.error(exception)
     return response, code
 
 
