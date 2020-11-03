@@ -26,11 +26,13 @@ def handle_error(exception):
     ])
 
     response = jsonify(code=code, message=message, reason=reason)
+    app.logger.error(response)
     return response, code
 
 
 @app.errorhandler(TRFormattedError)
 def handle_tr_formatted_error(error):
+    app.logger.error(error.json)
     g.errors = [error.json]
     return jsonify_result()
 
