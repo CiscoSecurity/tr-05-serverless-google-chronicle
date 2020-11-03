@@ -132,6 +132,7 @@
         "confidence": "High",
         "severity": "High",
         "short_description": "Malware Command and Control Server",
+        "title": "Malware Command and Control Server",
         "external_references": [
           {
             "source_name": "Chronicle IOC",

@@ -352,7 +352,8 @@
         "valid_time": {},
         "confidence": "Low",
         "severity": "None",
-        "short_description": "BlockedObject"
+        "short_description": "BlockedObject",
+        "title": "BlockedObject"
       }
     ]
   }

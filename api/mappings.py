@@ -200,6 +200,7 @@ class Mapping(metaclass=ABCMeta):
                         'strRawConfidenceScore')),
                 'severity': self.severity(source.get('rawSeverity')),
                 'short_description': source['category'],
+                'title': source['category']
             }
 
             source_url = source.get('sourceUrl')
