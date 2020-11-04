@@ -38,8 +38,8 @@ def test_positive_smoke_empty_observables(
         **{'headers': module_headers}
     )
 
-    response_from_chronicle_module = get_observables(
-        response_from_all_modules, MODULE_NAME)
+    response_from_chronicle_module = get_observables(response_from_all_modules,
+                                                     MODULE_NAME)
 
     assert response_from_chronicle_module['module'] == MODULE_NAME
     assert response_from_chronicle_module['module_instance_id']

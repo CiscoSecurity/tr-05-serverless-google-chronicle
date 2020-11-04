@@ -55,6 +55,7 @@ def test_positive_indicators(module_headers, observable, observable_type):
         assert indicator['producer'] == PRODUCER
         assert indicator['schema_version']
         assert indicator['short_description']
+        assert indicator['title'] == indicator['short_description']
         assert indicator['id'].startswith('transient:indicator-')
         assert indicator['severity'] in SEVERITY
         assert indicator['confidence'] in CONFIDENCE
