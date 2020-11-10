@@ -1,8 +1,12 @@
 import os
 from uuid import NAMESPACE_X500
 
+from __version__ import VERSION
+
 
 class Config(object):
+    VERSION = VERSION
+
     API_URL = 'https://backstory.googleapis.com/v1'
 
     AUTH_SCOPES = ['https://www.googleapis.com/auth/chronicle-backstory']
