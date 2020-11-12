@@ -23,6 +23,15 @@ class TRFormattedError(Exception):
                 'message': self.message}
 
 
+class ChronicleSSLError(TRFormattedError):
+    def __init__(self, error):
+        message = getattr(error, 'verify_message', error.args[1]).capitalize()
+        super().__init__(
+            UNKNOWN,
+            f'Unable to verify SSL certificate: {message}'
+        )
+
+
 class UnexpectedChronicleResponseError(TRFormattedError):
     def __init__(self, response, payload):
         title = "Unexpected response from Google Chronicle"

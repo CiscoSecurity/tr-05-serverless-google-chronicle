@@ -118,6 +118,9 @@ def jsonify_result():
     if g.get('errors'):
         result['errors'] = g.errors
 
+        if not result.get('data'):
+            result.pop('data', None)
+
     return jsonify(result)
 
 
