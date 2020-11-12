@@ -281,6 +281,24 @@ def bad_request_expected_payload(route):
 
 
 @fixture(scope='module')
+def ssl_error_expected_payload(route):
+    return expected_payload(
+        route,
+        {
+            'errors': [
+                {
+                    'code': UNKNOWN,
+                    'message': 'Unable to verify SSL certificate:'
+                               ' Self signed certificate',
+                    'type': 'fatal'
+                }
+            ],
+            'data': {}
+        }
+    )
+
+
+@fixture(scope='module')
 def success_enrich_body():
     return {
         'data': {

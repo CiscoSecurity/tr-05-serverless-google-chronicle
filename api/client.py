@@ -1,13 +1,15 @@
 import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
+from ssl import SSLCertVerificationError
 from urllib.parse import urlencode
 
 from flask import current_app
 
 from api.errors import (
     UnexpectedChronicleResponseError,
-    UnsupportedArtifactTypeError
+    UnsupportedArtifactTypeError,
+    ChronicleSSLError
 )
 from api.utils import join_url
 
@@ -64,13 +66,15 @@ class ChronicleClient:
             f'{time_filter}'
             f'{page_size_filter}'
         )
-
-        response, body = self.client.request(
-            url, 'GET',
-            headers={'Content-Type': 'application/json',
-                     'Accept': 'application/json',
-                     'User-Agent': current_app.config['USER_AGENT']}
-        )
+        try:
+            response, body = self.client.request(
+                url, 'GET',
+                headers={'Content-Type': 'application/json',
+                         'Accept': 'application/json',
+                         'User-Agent': current_app.config['USER_AGENT']}
+            )
+        except SSLCertVerificationError as error:
+            raise ChronicleSSLError(error)
 
         if response.status == HTTPStatus.OK:
             return json.loads(body)

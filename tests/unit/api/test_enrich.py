@@ -1,5 +1,6 @@
 from http import HTTPStatus
-from unittest.mock import patch
+from ssl import SSLCertVerificationError
+from unittest.mock import patch, MagicMock
 
 from pytest import fixture
 
@@ -254,3 +255,26 @@ def test_enrich_call_success_with_extended_error_handling(
 
         assert response['data'] == success_enrich_body['data']
         assert response['errors'] == unauthorized_creds_body['errors']
+
+
+def test_enrich_call_with_ssl_error(
+        route, client, valid_jwt, valid_json,
+        ssl_error_expected_payload
+):
+    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
+            patch('api.utils.service_account.'
+                  'Credentials.from_service_account_info'):
+        mock_exception = MagicMock()
+        mock_exception.reason.args.__getitem__().verify_message \
+            = 'self signed certificate'
+        authorized_http_mock.return_value = ClientMock(
+            side_effect=SSLCertVerificationError(mock_exception,
+                                                 'self signed certificate')
+        )
+
+        response = client.post(
+            route, headers=headers(valid_jwt), json=valid_json
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json == ssl_error_expected_payload
