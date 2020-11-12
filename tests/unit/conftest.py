@@ -85,8 +85,7 @@ def chronicle_response_too_many_requests():
                         'message': 'generic::resource_exhausted: insufficient '
                                    'ListArtifactAssets quota for '
                                    '000000demo-dev',
-                        'status': 'RESOURCE_EXHAUSTED'},
-                'data': {}
+                        'status': 'RESOURCE_EXHAUSTED'}
             }
         )
     )
@@ -123,7 +122,7 @@ def chronicle_response_ok(secret_key):
 
 
 @fixture(scope='session')
-def wrong_payload_structure_jwt(secret_key):
+def valid_jwt_with_wrong_payload(secret_key):
     header = {'alg': 'HS256'}
 
     payload = {'username': 'gdavoian', 'superuser': False}
@@ -195,7 +194,6 @@ def authorization_errors_expected_payload(route):
         return expected_payload(
             route,
             {
-                "data": {},
                 "errors": [
                     {
                         "code": AUTH_ERROR,
@@ -217,8 +215,7 @@ def unauthorized_creds_body():
              'message': ("Unexpected response from Google Chronicle: "
                          "Wrong creds!"),
              'type': 'fatal'}
-        ],
-        'data': {}
+        ]
     }
 
 
@@ -237,8 +234,7 @@ def invalid_json_expected_payload(route):
                  'message': ("{0: {'value': "
                              "['Missing data for required field.']}}"),
                  'type': 'fatal'}
-            ],
-            'data': {}
+            ]
         }
     )
 
@@ -253,8 +249,7 @@ def too_many_requests_expected_payload(route):
                  'message': 'Too many requests to Google Chronicle'
                             ' have been made. Please, try again later.',
                  'type': 'fatal'}
-            ],
-            'data': {}
+            ]
         }
     )
 
@@ -269,8 +264,7 @@ def internal_server_error_expected_payload(route):
                  'message': 'Unexpected response from Google Chronicle:'
                             ' Internal Server Error',
                  'type': 'fatal'}
-            ],
-            'data': {}
+            ]
         }
     )
 
@@ -292,8 +286,7 @@ def ssl_error_expected_payload(route):
                                ' Self signed certificate',
                     'type': 'fatal'
                 }
-            ],
-            'data': {}
+            ]
         }
     )
 

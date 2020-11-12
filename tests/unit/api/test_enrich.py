@@ -24,83 +24,6 @@ def invalid_json():
     return [{'type': 'domain'}]
 
 
-def test_enrich_call_with_authorization_header_failure(
-        route, client,
-        authorization_errors_expected_payload
-):
-    response = client.post(route)
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Authorization header is missing'
-    )
-
-
-def test_enrich_call_with_wrong_authorization_type(
-        route, client, valid_jwt,
-        authorization_errors_expected_payload
-):
-    response = client.post(route, headers=headers(valid_jwt,
-                                                  auth_type='wrong_type'))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong authorization type'
-    )
-
-
-def test_enrich_call_with_wrong_jwt_structure(
-        route, client, wrong_jwt_structure,
-        authorization_errors_expected_payload
-):
-    response = client.post(route, headers=headers(wrong_jwt_structure))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong JWT structure'
-    )
-
-
-def test_enrich_call_with_jwt_encoded_by_wrong_key(
-        route, client, invalid_jwt,
-        authorization_errors_expected_payload
-):
-    response = client.post(route, headers=headers(invalid_jwt))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Failed to decode JWT with provided key'
-    )
-
-
-def test_enrich_call_with_wrong_jwt_payload_structure(
-        route, client, wrong_payload_structure_jwt,
-        authorization_errors_expected_payload
-):
-    response = client.post(route,
-                           headers=headers(wrong_payload_structure_jwt))
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong JWT payload structure'
-    )
-
-
-def test_enrich_call_with_missed_secret_key(
-        route, client, valid_jwt,
-        authorization_errors_expected_payload
-):
-    right_secret_key = client.application.secret_key
-    client.application.secret_key = None
-    response = client.post(route, headers=headers(valid_jwt))
-    client.application.secret_key = right_secret_key
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        '<SECRET_KEY> is missing'
-    )
-
-
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
         route, client, valid_jwt, invalid_json,
         invalid_json_expected_payload,
@@ -119,23 +42,6 @@ def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
 @fixture(scope='module')
 def valid_json():
     return [{'type': 'domain', 'value': 'google.com'}]
-
-
-def test_enrich_call_with_unauthorized_creds_failure(
-        route, client, valid_jwt, valid_json,
-        chronicle_response_unauthorized_creds,
-        unauthorized_creds_expected_payload
-):
-    with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
-        patch('api.utils.service_account.'
-              'Credentials.from_service_account_info'):
-        authorized_http_mock.return_value = ClientMock(
-            chronicle_response_unauthorized_creds
-        )
-        response = client.post(route, headers=headers(valid_jwt),
-                               json=valid_json)
-
-        assert response.json == unauthorized_creds_expected_payload
 
 
 def test_enrich_call_with_too_many_requests_failure(
