@@ -25,7 +25,7 @@ class Config(object):
 
     DEFAULT_NUMBER_OF_DAYS_FOR_CHRONICLE_TIME_FILTER = 90
 
-    USER_AGENT = ('Cisco Threat Response Integrations '
+    USER_AGENT = ('SecureX Threat Response Integrations '
                   '<tr-integrations-support@cisco.com>')
 
     NAMESPACE_BASE = NAMESPACE_X500

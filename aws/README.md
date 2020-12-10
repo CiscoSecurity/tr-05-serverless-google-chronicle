@@ -69,7 +69,7 @@ be able to attach such roles to any of your Lambdas on behalf of `serverless`.
 We have already compiled the
 [policy file](ZappaLambdaExecutionPolicy.json) with a much smaller set of
 permissions intended exactly for our particular use case (i.e. implementation
-of Threat Response Serverless Relay APIs). You just have to create an AIM role
+of SecureX Threat Response Serverless Relay APIs). You just have to create an AIM role
 per each deployment (i.e. a unique `profile_name` + `stage` combination) and
 attach this policy to the role by going through the following steps:
 
