@@ -1,0 +1,122 @@
+{
+    "title": "Google Chronicle",
+    "default_name": "Google Chronicle",
+    "short_description": "Chronicle is a cloud service, built as a specialized layer on top of core Google infrastructure, designed so that enterprises can privately retain, analyze and search the massive amounts of security and network telemetry they generate.",
+    "description": "Chronicle is a cloud service, built as a specialized layer on top of core Google infrastructure, designed so that enterprises can privately retain, analyze and search the massive amounts of security and network telemetry they generate today. Chronicle normalizes, indexes, correlates, and analyzes the data - against itself and against third party and curated threat signals - to provide instant analysis and context regarding any risky activity.\n\n\n#### **Some of the platform's key functions:**\n\n\n- **Data Ingestion** Chronicle can ingest a variety of telemetry types through Chronicle Forwarder, an ingestion API, other cloud services like Amazon S3 Bucket and via integrations with 3rd party cloud APIs to facilitate ingestion of logs.\n\n\n- **Data Analysis** The analytical capabilities of Chronicle are delivered to security professionals as a simple, browser-based application. Many of these capabilities are also accessible programmatically via read APIs and can be triggered from other security tools.\n\n\n- **Security & Compliance** As a specialized, private layer built over core Google infrastructure, Chronicle inherits compute and storage capabilities as well the security design and capabilities of that infrastructure.",
+    "tips": "When configuring this integration, you must first gather some information from your some information from your Google Chronicle account.\n\n1. Your Customer Experience Engineer (CEE) will provide you with a [Google Developer Service Account Credential](https://developers.google.com/identity/protocols/oauth2#serviceaccount) to enable the Google API client to communicate with the Chronicle API.\n\n2. Complete the **Add New Google Chronicle Module** form:\n    - **Module Name** - Leave the default name or enter a name that is meaningful to you.\n    - Enter the **Credentials Type**, **Project ID**, **Private Key ID**, **Private Key**, **Client ID**, **Client Email**, **Auth URI**, **Token URI**, **Auth Provider X509 Cert URL**, **Client X509 Cert URL** from your Google Chronicle API credentials.\n    - **Entities Limit** - Enter the limit that restricts the maximum number of CTIM entities of each type returned in a single response per each requested observable. Must be a positive integer. Defaults to 100 (if unset or incorrect).\n\n3. Click **Save** to complete the Google Chronicle module configuration.",
+    "external_references": [
+        {
+            "label": "Free Trial",
+            "link": "https://go.chronicle.security/contact"
+        },
+        {
+            "label": "Whitepaper",
+            "link": "https://go.chronicle.security/whitepaper-chronicle"
+        },
+        {
+            "label": "Data Sheet",
+            "link": "https://go.chronicle.security/hubfs/Backstory_DS.pdf"
+        }
+    ],
+    "configuration_spec": [
+        {
+            "key": "custom_type",
+            "type": "string",
+            "label": "Credentials Type",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_project_id",
+            "type": "string",
+            "label": "Project ID",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_private_key_id",
+            "type": "string",
+            "label": "Private Key ID",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_private_key",
+            "type": "password",
+            "label": "Private Key",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_client_id",
+            "type": "string",
+            "label": "Client ID",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_auth_uri",
+            "type": "string",
+            "label": "Auth URI",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_token_uri",
+            "type": "string",
+            "label": "Token URI",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_client_email",
+            "type": "string",
+            "label": "Client Email",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_auth_provider_x509_cert_url",
+            "type": "string",
+            "label": "Auth Provider X509 Cert URL",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_client_x509_cert_url",
+            "type": "string",
+            "label": "Client X509 Cert URL",
+            "required": true,
+            "group": "Google Chronicle API credentials"
+        },
+        {
+            "key": "custom_CTR_ENTITIES_LIMIT",
+            "type": "integer",
+            "label": "Entities Limit",
+            "tooltip": "Restricts the maximum number of `Sightings` and `Indicators`",
+            "required": false,
+            "group": "Integration module configuration"
+        }
+    ],
+    "capabilities": [
+        {
+            "id": "health",
+            "description": "Performs health check against Chronicle API."
+        },
+        {
+            "id": "observe",
+            "description": "Queries Chronicle with IP, Domain, Hash and MD5 and returns Sighting and Indicator to Threat Response."
+        }
+    ],
+    "properties": {
+        "url": "https://ciscohosted.url",
+        "supported-apis": [
+            "health",
+            "observe/observables"
+        ],
+        "auth-type": "configuration-token",
+        "configuration-token-alg": "RS256",
+        "custom_jwks_host": "visibility.amp.cisco.com"
+    },
+    "logo": "data:image/jpeg;base64,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"
+}

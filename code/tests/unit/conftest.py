@@ -1,11 +1,8 @@
 import json
-from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from authlib.jose import jwt
-from pytest import fixture
-
+import jwt
 from api.errors import (
     PERMISSION_DENIED,
     INVALID_ARGUMENT,
@@ -14,17 +11,56 @@ from api.errors import (
     AUTH_ERROR
 )
 from app import app
+from pytest import fixture
+from tests.unit.mock_for_tests import (
+    EXPECTED_RESPONSE_OF_JWKS_ENDPOINT,
+    PRIVATE_KEY,
+    RESPONSE_OF_JWKS_ENDPOINT_WITH_WRONG_KEY
+)
 
 
 @fixture(scope='session')
-def secret_key():
-    # Generate some string based on the current datetime.
-    return datetime.utcnow().isoformat()
+def valid_jwt(client):
+    def _make_jwt(
+            jwks_host='visibility.amp.cisco.com',
+            aud='http://localhost',
+            kid='02B1174234C29F8EFB69911438F597FF3FFEE6B7',
+            wrong_structure=False,
+            missing_jwks_host=False
+    ):
+        payload = {
+            'type': '<CREDENTIALS_TYPE>',
+            'project_id': '<PROJECT_ID>',
+            'private_key_id': '<PRIVATE_KEY_ID>',
+            'private_key': '<PRIVATE_KEY>',
+            'client_email': '<CLIENT_EMAIL>',
+            'client_id': '<CLIENT_ID>',
+            'auth_uri': '<AUTH_URI>',
+            'token_uri': '<TOKEN_URI>',
+            'auth_provider_x509_cert_url': '<AUTH_PROVIDER_X509_CERT_URL>',
+            'client_x509_cert_url': '<CLIENT_CERT_URL>',
+            'jwks_host': jwks_host,
+            'aud': aud,
+        }
+
+        if wrong_structure:
+            payload.pop('token_uri')
+        if missing_jwks_host:
+            payload.pop('jwks_host')
+
+        return jwt.encode(
+            payload, client.application.rsa_private_key, algorithm='RS256',
+            headers={
+                'kid': kid
+            }
+        )
+
+    return _make_jwt
 
 
 @fixture(scope='session')
-def client(secret_key):
-    app.secret_key = secret_key
+def client():
+    app.rsa_private_key = PRIVATE_KEY
 
     app.testing = True
 
@@ -48,7 +84,7 @@ class ClientMock(MagicMock):
 
 
 @fixture(scope='session')
-def chronicle_response_unauthorized_creds(secret_key):
+def chronicle_response_unauthorized_creds():
     return (
         ResponseMock(HTTPStatus.FORBIDDEN),
         json.dumps({"error": {"code": HTTPStatus.FORBIDDEN,
@@ -100,7 +136,7 @@ def chronicle_response_bad_request():
 
 
 @fixture(scope='session')
-def chronicle_response_ok(secret_key):
+def chronicle_response_ok():
     payload_success = {
         "assets": [
             {
@@ -119,58 +155,6 @@ def chronicle_response_ok(secret_key):
     }
 
     return ResponseMock(HTTPStatus.OK), json.dumps(payload_success)
-
-
-@fixture(scope='session')
-def valid_jwt_with_wrong_payload(secret_key):
-    header = {'alg': 'HS256'}
-
-    payload = {'username': 'gdavoian', 'superuser': False}
-
-    return jwt.encode(header, payload, secret_key).decode('ascii')
-
-
-@fixture(scope='session')
-def valid_jwt(secret_key):
-    header = {'alg': 'HS256'}
-
-    payload = {
-        "type": "<CREDENTIALS_TYPE>",
-        "project_id": "<PROJECT_ID>",
-        "private_key_id": "<PRIVATE_KEY_ID>",
-        "private_key": "<PRIVATE_KEY>",
-        "client_email": "<CLIENT_EMAIL>",
-        "client_id": "<CLIENT_ID>",
-        "auth_uri": "<AUTH_URI>",
-        "token_uri": "<TOKEN_URI>",
-        "auth_provider_x509_cert_url": "<AUTH_PROVIDER_X509_CERT_URL>",
-        "client_x509_cert_url": "<CLIENT_CERT_URL>"
-    }
-
-    return jwt.encode(header, payload, secret_key).decode('ascii')
-
-
-@fixture(scope='session')
-def invalid_jwt(valid_jwt, secret_key):
-    header, payload, signature = valid_jwt.split('.')
-
-    def jwt_decode(s: str) -> dict:
-        from authlib.common.encoding import urlsafe_b64decode, json_loads
-        return json_loads(urlsafe_b64decode(s.encode('ascii')))
-
-    def jwt_encode(d: dict) -> str:
-        from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode(
-            'ascii')
-
-    payload = jwt_decode(payload)
-
-    # Corrupt the valid JWT by tampering with its payload.
-    payload['superuser'] = True
-
-    payload = jwt_encode(payload)
-
-    return '.'.join([header, payload, signature])
 
 
 @fixture(scope='module')
@@ -404,3 +388,20 @@ def success_enrich_body():
 @fixture(scope='module')
 def success_enrich_expected_payload(route, success_enrich_body):
     return expected_payload(route, success_enrich_body)
+
+
+@fixture(scope='session')
+def get_public_key():
+    mock_response = MagicMock()
+    payload = EXPECTED_RESPONSE_OF_JWKS_ENDPOINT
+
+    mock_response.json = lambda: payload
+    return mock_response
+
+
+@fixture(scope='session')
+def get_wrong_public_key():
+    mock_response = MagicMock()
+    payload = RESPONSE_OF_JWKS_ENDPOINT_WITH_WRONG_KEY
+    mock_response.json = lambda: payload
+    return mock_response
