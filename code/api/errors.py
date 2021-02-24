@@ -7,6 +7,7 @@ PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
 TOO_MANY_REQUESTS = 'too many requests'
 AUTH_ERROR = 'authorization error'
+HEALTH_CHECK_ERROR = 'health check failed'
 
 
 class TRFormattedError(Exception):
@@ -90,4 +91,12 @@ class UnsupportedArtifactTypeError(InvalidArgumentError):
     def __init__(self, type_):
         super().__init__(
             f"Unsupported artifact type error: {type_}"
+        )
+
+
+class WatchdogError(TRFormattedError):
+    def __init__(self):
+        super().__init__(
+            HEALTH_CHECK_ERROR,
+            'Invalid Health Check'
         )

@@ -24,15 +24,17 @@ def invalid_json():
     return [{'type': 'domain'}]
 
 
+@patch('requests.get')
 def test_enrich_call_with_valid_jwt_but_invalid_json_failure(
-        route, client, valid_jwt, invalid_json,
-        invalid_json_expected_payload,
+        request_mock, route, client, valid_jwt, invalid_json,
+        invalid_json_expected_payload, get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http'), \
          patch('api.utils.service_account.'
                'Credentials.from_service_account_info'):
         response = client.post(route,
-                               headers=headers(valid_jwt),
+                               headers=headers(valid_jwt()),
                                json=invalid_json)
 
         assert response.status_code == HTTPStatus.OK
@@ -44,11 +46,14 @@ def valid_json():
     return [{'type': 'domain', 'value': 'google.com'}]
 
 
+@patch('requests.get')
 def test_enrich_call_with_too_many_requests_failure(
-        route, client, valid_jwt, valid_json,
+        request_mock, route, client, valid_jwt, valid_json,
         chronicle_response_too_many_requests,
-        too_many_requests_expected_payload
+        too_many_requests_expected_payload,
+        get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
@@ -56,17 +61,20 @@ def test_enrich_call_with_too_many_requests_failure(
             chronicle_response_too_many_requests
         )
 
-        response = client.post(route, headers=headers(valid_jwt),
+        response = client.post(route, headers=headers(valid_jwt()),
                                json=valid_json)
 
         assert response.json == too_many_requests_expected_payload
 
 
+@patch('requests.get')
 def test_enrich_call_with_internal_error_failure(
-        route, client, valid_jwt, valid_json,
+        request_mock, route, client, valid_jwt, valid_json,
         chronicle_response_internal_error,
-        internal_server_error_expected_payload
+        internal_server_error_expected_payload,
+        get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
@@ -74,17 +82,19 @@ def test_enrich_call_with_internal_error_failure(
             chronicle_response_internal_error
         )
 
-        response = client.post(route, headers=headers(valid_jwt),
+        response = client.post(route, headers=headers(valid_jwt()),
                                json=valid_json)
 
         assert response.json == internal_server_error_expected_payload
 
 
+@patch('requests.get')
 def test_enrich_call_with_bad_request_success(
-        route, client, valid_jwt, valid_json,
+        request_mock, route, client, valid_jwt, valid_json,
         chronicle_response_bad_request,
-        bad_request_expected_payload
+        bad_request_expected_payload, get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
         patch('api.utils.service_account.'
               'Credentials.from_service_account_info'):
@@ -92,16 +102,19 @@ def test_enrich_call_with_bad_request_success(
             chronicle_response_bad_request
         )
 
-        response = client.post(route, headers=headers(valid_jwt),
+        response = client.post(route, headers=headers(valid_jwt()),
                                json=valid_json)
 
         assert response.json == bad_request_expected_payload
 
 
+@patch('requests.get')
 def test_enrich_call_success(
-        route, client, valid_jwt, valid_json,
-        chronicle_response_ok, success_enrich_expected_payload
+        request_mock, route, client, valid_jwt, valid_json,
+        chronicle_response_ok, success_enrich_expected_payload,
+        get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
@@ -109,7 +122,7 @@ def test_enrich_call_success(
             chronicle_response_ok
         )
 
-        response = client.post(route, headers=headers(valid_jwt),
+        response = client.post(route, headers=headers(valid_jwt()),
                                json=valid_json)
 
         assert response.status_code == HTTPStatus.OK
@@ -131,11 +144,14 @@ def valid_json_multiple():
             {'type': 'domain', 'value': 'cisco.com'}]
 
 
+@patch('requests.get')
 def test_enrich_call_success_with_extended_error_handling(
-        client, valid_jwt, valid_json_multiple, chronicle_response_ok,
-        chronicle_response_unauthorized_creds, chronicle_response_bad_request,
-        success_enrich_body, unauthorized_creds_body
+        request_mock, client, valid_jwt, valid_json_multiple,
+        chronicle_response_ok, chronicle_response_unauthorized_creds,
+        chronicle_response_bad_request, success_enrich_body,
+        unauthorized_creds_body, get_public_key
 ):
+    request_mock.side_effect = [get_public_key]*3
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
         patch('api.utils.service_account.'
               'Credentials.from_service_account_info'):
@@ -149,7 +165,7 @@ def test_enrich_call_success_with_extended_error_handling(
         )
 
         response = client.post('observe/observables',
-                               headers=headers(valid_jwt),
+                               headers=headers(valid_jwt()),
                                json=valid_json_multiple)
 
         assert response.status_code == HTTPStatus.OK
@@ -163,10 +179,12 @@ def test_enrich_call_success_with_extended_error_handling(
         assert response['errors'] == unauthorized_creds_body['errors']
 
 
+@patch('requests.get')
 def test_enrich_call_with_ssl_error(
-        route, client, valid_jwt, valid_json,
-        ssl_error_expected_payload
+        request_mock, route, client, valid_jwt, valid_json,
+        ssl_error_expected_payload, get_public_key
 ):
+    request_mock.return_value = get_public_key
     with patch('api.utils._auth.authorized_http') as authorized_http_mock, \
             patch('api.utils.service_account.'
                   'Credentials.from_service_account_info'):
@@ -179,7 +197,7 @@ def test_enrich_call_with_ssl_error(
         )
 
         response = client.post(
-            route, headers=headers(valid_jwt), json=valid_json
+            route, headers=headers(valid_jwt()), json=valid_json
         )
 
         assert response.status_code == HTTPStatus.OK

@@ -1,0 +1,11 @@
+google-api-python-client==1.7.11
+google==2.0.3
+Flask==1.1.2
+marshmallow==3.6.1
+zappa==0.52.0
+requests==2.24.0
+cryptography==3.3.2
+pyjwt[crypto]==2.0.0
+flake8==3.8.4
+coverage==5.1
+pytest==5.4.3
