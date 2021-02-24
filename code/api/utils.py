@@ -115,7 +115,6 @@ def get_jwt() -> [dict, Exception]:
         assert payload.keys() >= jwt_payload_keys
         payload['private_key'] = payload['private_key'].replace('\\n', '\n')
         set_ctr_entities_limit(payload)
-        print(payload)
         return payload
     except tuple(expected_errors) as error:
         raise AuthorizationError(expected_errors[error.__class__])
