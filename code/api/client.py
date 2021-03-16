@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from ssl import SSLCertVerificationError
+from google.auth.exceptions import RefreshError
+from json.decoder import JSONDecodeError
 from urllib.parse import urlencode
 
 from flask import current_app
@@ -9,11 +11,16 @@ from flask import current_app
 from api.errors import (
     UnexpectedChronicleResponseError,
     UnsupportedArtifactTypeError,
-    ChronicleSSLError
+    ChronicleSSLError,
+    AuthorizationError
 )
 from api.utils import join_url
 
 NOT_CRITICAL_ERRORS = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND)
+EXPECTED_AUTH_ERRORS = {
+    RefreshError: 'Invalid Client Email',
+    JSONDecodeError: 'Invalid Token URI'
+}
 
 
 class ChronicleClient:
@@ -75,6 +82,8 @@ class ChronicleClient:
             )
         except SSLCertVerificationError as error:
             raise ChronicleSSLError(error)
+        except tuple(EXPECTED_AUTH_ERRORS) as error:
+            raise AuthorizationError(EXPECTED_AUTH_ERRORS[error.__class__])
 
         if response.status == HTTPStatus.OK:
             return json.loads(body)

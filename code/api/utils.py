@@ -82,16 +82,9 @@ def get_jwt() -> [dict, Exception]:
     from /.well-known/jwks endpoint
     """
     jwt_payload_keys = {
-        'type',
-        'project_id',
-        'private_key_id',
         'private_key',
         'client_email',
-        'client_id',
-        'auth_uri',
-        'token_uri',
-        'auth_provider_x509_cert_url',
-        'client_x509_cert_url'
+        'token_uri'
     }
     expected_errors = {
         AssertionError: WRONG_PAYLOAD_STRUCTURE,
