@@ -23,21 +23,21 @@
             "key": "custom_type",
             "type": "string",
             "label": "Credentials Type",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
             "key": "custom_project_id",
             "type": "string",
             "label": "Project ID",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
             "key": "custom_private_key_id",
             "type": "string",
             "label": "Private Key ID",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
@@ -51,14 +51,14 @@
             "key": "custom_client_id",
             "type": "string",
             "label": "Client ID",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
             "key": "custom_auth_uri",
             "type": "string",
             "label": "Auth URI",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
@@ -79,14 +79,14 @@
             "key": "custom_auth_provider_x509_cert_url",
             "type": "string",
             "label": "Auth Provider X509 Cert URL",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
             "key": "custom_client_x509_cert_url",
             "type": "string",
             "label": "Client X509 Cert URL",
-            "required": true,
+            "required": false,
             "group": "Google Chronicle API credentials"
         },
         {
