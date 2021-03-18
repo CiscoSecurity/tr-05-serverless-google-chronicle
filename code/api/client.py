@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from ssl import SSLCertVerificationError
-from google.auth.exceptions import RefreshError
+from google.auth.exceptions import RefreshError, TransportError
 from json.decoder import JSONDecodeError
 from urllib.parse import urlencode
 
@@ -19,7 +19,8 @@ from api.utils import join_url
 NOT_CRITICAL_ERRORS = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND)
 EXPECTED_AUTH_ERRORS = {
     RefreshError: 'Invalid Client Email',
-    JSONDecodeError: 'Invalid Token URI'
+    JSONDecodeError: 'Invalid Token URI',
+    TransportError: 'Token URI is missing'
 }
 
 
