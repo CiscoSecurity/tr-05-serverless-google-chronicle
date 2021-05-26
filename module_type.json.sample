@@ -6,10 +6,6 @@
     "tips": "When configuring this integration, you must first gather some information from your some information from your Google Chronicle account.\n\n1. Your Customer Experience Engineer (CEE) will provide you with a [Google Developer Service Account Credential](https://developers.google.com/identity/protocols/oauth2#serviceaccount) to enable the Google API client to communicate with the Chronicle API.\n\n2. Complete the **Add New Google Chronicle Module** form:\n    - **Module Name** - Leave the default name or enter a name that is meaningful to you.\n    - Enter the **Credentials Type**, **Project ID**, **Private Key ID**, **Private Key**, **Client ID**, **Client Email**, **Auth URI**, **Token URI**, **Auth Provider X509 Cert URL**, **Client X509 Cert URL** from your Google Chronicle API credentials.\n    - **Entities Limit** - Enter the limit that restricts the maximum number of CTIM entities of each type returned in a single response per each requested observable. Must be a positive integer. Defaults to 100 (if unset or incorrect).\n\n3. Click **Save** to complete the Google Chronicle module configuration.",
     "external_references": [
         {
-            "label": "Free Trial",
-            "link": "https://go.chronicle.security/contact"
-        },
-        {
             "label": "Whitepaper",
             "link": "https://go.chronicle.security/whitepaper-chronicle"
         },
