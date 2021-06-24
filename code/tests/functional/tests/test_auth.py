@@ -1,5 +1,5 @@
-import os
 import pytest
+
 
 @pytest.mark.skip('Changed of functionality to get token')
 def test_relay_auth_positive(relay_api):
@@ -19,6 +19,7 @@ def test_relay_auth_positive(relay_api):
     response = relay_api.health('')
     assert response.status_code == 200
     assert response.json()['data'] == {'status': 'ok'}
+
 
 @pytest.mark.skip('Changed of functionality to get token')
 # @pytest.mark.parametrize(
