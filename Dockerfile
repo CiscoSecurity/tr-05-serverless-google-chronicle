@@ -1,4 +1,4 @@
-FROM alpine:3.13
+FROM alpine:3.14
 LABEL maintainer="Ian Redden <iaredden@cisco.com>"
 
 # install packages we need
