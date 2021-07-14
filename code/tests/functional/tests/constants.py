@@ -1,4 +1,4 @@
-MODULE_NAME = 'Google Chronicle Conf Token'
+MODULE_NAME = 'Google Chronicle'
 PRODUCER = 'Chronicle'
 SOURCE_NAME = 'Chronicle IOC'
 CONFIDENCE = SEVERITY = ('Low', 'Medium', 'High', 'Info', 'Unknown', 'None')

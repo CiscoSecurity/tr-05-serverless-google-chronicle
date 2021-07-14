@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 
 import jwt
 import requests
@@ -6,7 +7,7 @@ from flask import request, current_app, jsonify, g
 from google.oauth2 import service_account
 from googleapiclient import _auth
 from jwt import InvalidSignatureError, DecodeError, InvalidAudienceError
-from requests.exceptions import ConnectionError, InvalidURL
+from requests.exceptions import ConnectionError, InvalidURL, HTTPError
 
 from api.errors import (
     AuthorizationError,
@@ -38,13 +39,16 @@ def set_ctr_entities_limit(payload):
 
 
 def get_public_key(jwks_host, token):
-    expected_errors = {
-        ConnectionError: WRONG_JWKS_HOST,
-        InvalidURL: WRONG_JWKS_HOST,
-    }
+    expected_errors = (
+        ConnectionError,
+        InvalidURL,
+        JSONDecodeError,
+        HTTPError,
+    )
 
     try:
         response = requests.get(f"https://{jwks_host}/.well-known/jwks")
+        response.raise_for_status()
         jwks = response.json()
 
         public_keys = {}
@@ -55,9 +59,8 @@ def get_public_key(jwks_host, token):
             )
         kid = jwt.get_unverified_header(token)['kid']
         return public_keys.get(kid)
-    except tuple(expected_errors) as error:
-        message = expected_errors[error.__class__]
-        raise AuthorizationError(message)
+    except expected_errors:
+        raise AuthorizationError(WRONG_JWKS_HOST)
 
 
 def get_auth_token() -> [str, Exception]:
