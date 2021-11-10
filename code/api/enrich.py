@@ -6,7 +6,6 @@ from api.client import ChronicleClient
 from api.mappings import Mapping
 from api.schemas import ObservableSchema
 from api.utils import (
-    jsonify_data,
     get_chronicle_http_client,
     get_jwt,
     get_json,
