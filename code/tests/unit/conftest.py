@@ -162,32 +162,19 @@ def wrong_jwt_structure():
     return 'jwt_with_wrong_structure'
 
 
-def expected_payload(r, body):
-    if r.endswith('/deliberate/observables'):
-        return {'data': {}}
-
-    if r.endswith('/refer/observables'):
-        return {'data': []}
-
-    return body
-
-
 @fixture(scope='module')
-def authorization_errors_expected_payload(route):
+def authorization_errors_expected_payload():
     def _make_payload_message(message):
-        return expected_payload(
-            route,
-            {
-                "errors": [
-                    {
-                        "code": AUTH_ERROR,
-                        "message": f'Authorization failed: '
-                                   f'{message}',
-                        "type": "fatal"
-                    }
-                ]
-            }
-        )
+        return {
+            "errors": [
+                {
+                    "code": AUTH_ERROR,
+                    "message": f'Authorization failed: '
+                               f'{message}',
+                    "type": "fatal"
+                }
+            ]
+        }
     return _make_payload_message
 
 
@@ -204,79 +191,67 @@ def unauthorized_creds_body():
 
 
 @fixture(scope='module')
-def unauthorized_creds_expected_payload(route, unauthorized_creds_body):
-    return expected_payload(route, unauthorized_creds_body)
+def unauthorized_creds_expected_payload(unauthorized_creds_body):
+    return unauthorized_creds_body
 
 
 @fixture(scope='module')
-def invalid_json_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': INVALID_ARGUMENT,
-                 'message': ("{0: {'value': "
-                             "['Missing data for required field.']}}"),
-                 'type': 'fatal'}
-            ]
-        }
-    )
+def invalid_json_expected_payload():
+    return {
+        'errors': [
+            {'code': INVALID_ARGUMENT,
+             'message': ("{0: {'value': "
+                         "['Missing data for required field.']}}"),
+             'type': 'fatal'}
+        ]
+    }
 
 
 @fixture(scope='module')
-def too_many_requests_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': TOO_MANY_REQUESTS,
-                 'message': 'Too many requests to Google Chronicle'
-                            ' have been made. Please, try again later.',
-                 'type': 'fatal'}
-            ]
-        }
-    )
+def too_many_requests_expected_payload():
+    return {
+        'errors': [
+            {'code': TOO_MANY_REQUESTS,
+             'message': 'Too many requests to Google Chronicle'
+                        ' have been made. Please, try again later.',
+             'type': 'fatal'}
+        ]
+    }
 
 
 @fixture(scope='module')
-def internal_server_error_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {'code': UNKNOWN,
-                 'message': 'Unexpected response from Google Chronicle:'
-                            ' Internal Server Error',
-                 'type': 'fatal'}
-            ]
-        }
-    )
+def internal_server_error_expected_payload():
+    return {
+        'errors': [
+            {'code': UNKNOWN,
+             'message': 'Unexpected response from Google Chronicle:'
+                        ' Internal Server Error',
+             'type': 'fatal'}
+        ]
+    }
 
 
 @fixture(scope='module')
-def bad_request_expected_payload(route):
-    return expected_payload(route, {'data': {}})
+def bad_request_expected_payload():
+    return {'data': {}}
 
 
 @fixture(scope='module')
-def ssl_error_expected_payload(route):
-    return expected_payload(
-        route,
-        {
-            'errors': [
-                {
-                    'code': UNKNOWN,
-                    'message': 'Unable to verify SSL certificate:'
-                               ' Self signed certificate',
-                    'type': 'fatal'
-                }
-            ]
-        }
-    )
+def ssl_error_expected_payload():
+    return {
+        'errors': [
+            {
+                'code': UNKNOWN,
+                'message': 'Unable to verify SSL certificate:'
+                           ' Self signed certificate',
+                'type': 'fatal'
+            }
+        ]
+    }
 
 
 @fixture(scope='module')
-def success_enrich_body():
+def success_enrich_expected_payload():
     return {
         'data': {
             'sightings': {
@@ -383,11 +358,6 @@ def success_enrich_body():
                 ]
             }
         }}
-
-
-@fixture(scope='module')
-def success_enrich_expected_payload(route, success_enrich_body):
-    return expected_payload(route, success_enrich_body)
 
 
 @fixture(scope='session')

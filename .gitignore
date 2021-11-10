@@ -19,3 +19,6 @@ project.properties
 # Reporting
 artifacts/
 /venv/
+
+# macOS
+.DS_Store

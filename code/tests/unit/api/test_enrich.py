@@ -9,9 +9,7 @@ from ..conftest import ClientMock
 
 
 def routes():
-    yield '/deliberate/observables'
     yield '/observe/observables'
-    yield '/refer/observables'
 
 
 @fixture(scope='module', params=routes(), ids=lambda route: f'POST {route}')
@@ -148,7 +146,7 @@ def valid_json_multiple():
 def test_enrich_call_success_with_extended_error_handling(
         request_mock, client, valid_jwt, valid_json_multiple,
         chronicle_response_ok, chronicle_response_unauthorized_creds,
-        chronicle_response_bad_request, success_enrich_body,
+        chronicle_response_bad_request, success_enrich_expected_payload,
         unauthorized_creds_body, get_public_key
 ):
     request_mock.side_effect = [get_public_key]*3
@@ -175,7 +173,7 @@ def test_enrich_call_success_with_extended_error_handling(
         for doc in response['data']['sightings']['docs']:
             assert doc.pop('id')
 
-        assert response['data'] == success_enrich_body['data']
+        assert response['data'] == success_enrich_expected_payload['data']
         assert response['errors'] == unauthorized_creds_body['errors']
 
 
