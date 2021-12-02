@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, jsonify, g
 
 from api.enrich import enrich_api
@@ -28,13 +30,13 @@ def handle_error(exception):
     ])
 
     response = jsonify(code=code, message=message, reason=reason)
-    app.logger.error(exception)
+    app.logger.error(traceback.format_exc())
     return response, code
 
 
 @app.errorhandler(TRFormattedError)
 def handle_tr_formatted_error(error):
-    app.logger.error(error.json)
+    app.logger.error(traceback.format_exc())
     g.errors = [error.json]
     return jsonify_result()
 
