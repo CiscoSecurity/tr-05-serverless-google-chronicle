@@ -29,8 +29,10 @@ def handle_error(exception):
         exception.__class__.__name__,
     ])
 
+    if code != 404:
+        app.logger.error(traceback.format_exc())
+
     response = jsonify(code=code, message=message, reason=reason)
-    app.logger.error(traceback.format_exc())
     return response, code
 
 
